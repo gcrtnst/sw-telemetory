@@ -14,7 +14,7 @@ function init()
 	g_active = false
 	g_tick = 0
 
-	g_header = {'Tick'}
+	g_header = {''}
 	for i = 1, p_numcol do
 		local label = p_label[i]
 		label = encodeCSVField(label)
