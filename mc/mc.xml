@@ -154,32 +154,32 @@
 				</object>
 			</c>
 			<c type="56">
-				<object id="41" script="function init()
+				<object id="41" script='function init()
 	-- property --
-	p_active = property.getBool('Active')
-	p_port = property.getNumber('Port')
-	p_title = property.getText('Title')
-	p_numcol = property.getNumber('Number of Columns')
+	p_active = property.getBool(&apos;Active&apos;)
+	p_port = property.getNumber(&apos;Port&apos;)
+	p_title = property.getText(&apos;Title&apos;)
+	p_numcol = property.getNumber(&apos;Number of Columns&apos;)
 
 	p_label = {}
 	for i = 1, p_numcol do
-		p_label[i] = property.getText('Label ' .. string.format('%d', i))
+		p_label[i] = property.getText(&apos;Label &apos; .. string.format(&apos;%d&apos;, i))
 	end
 
 	-- global --
 	g_active = false
 	g_tick = 0
 
-	g_header = {'Tick'}
+	g_header = {&apos;Tick&apos;}
 	for i = 1, p_numcol do
 		local label = p_label[i]
-		label = string.gsub(label, ',', '')
+		label = encodeCSVField(label)
 		table.insert(g_header, label)
 	end
-	g_header = table.concat(g_header, ',')
+	g_header = table.concat(g_header, &apos;,&apos;)
 
 	g_client = buildClient()
-	g_client['sender']['port'] = p_port
+	g_client[&apos;sender&apos;][&apos;port&apos;] = p_port
 end
 
 function onTick()
@@ -195,12 +195,12 @@ function onTick()
 
 	-- write --
 	if g_active then
-		local buf = {string.format('%d', g_tick)}
+		local buf = {string.format(&apos;%d&apos;, g_tick)}
 		for i = 1, p_numcol do
 			local num = input.getNumber(i)
-			table.insert(buf, string.format('%G', num))
+			table.insert(buf, string.format(&apos;%G&apos;, num))
 		end
-		buf = table.concat(buf, ',')
+		buf = table.concat(buf, &apos;,&apos;)
 		g_client.write(buf)
 	end
 
@@ -214,22 +214,30 @@ end
 
 
 function httpReply(port, request, response)
-	g_client['sender'].httpReply(port, request, response)
+	g_client[&apos;sender&apos;].httpReply(port, request, response)
+end
+
+function encodeCSVField(s)
+	if string.match(s, &apos;[\n",]&apos;) ~= fail then
+		s = string.gsub(s, &apos;"&apos;, &apos;""&apos;)
+		s = &apos;"&apos; .. s .. &apos;"&apos;
+	end
+	return s
 end
 
 function buildClient()
 	local client = {
-		['sender'] = buildSender(),
+		[&apos;sender&apos;] = buildSender(),
 	}
 
 	function client.new(title)
-		title = string.gsub(title, '\n', '')
-		client['sender'].write('n' .. title .. '\n')
+		title = string.gsub(title, &apos;\n&apos;, &apos;&apos;)
+		client[&apos;sender&apos;].write(&apos;n&apos; .. title .. &apos;\n&apos;)
 	end
 
 	function client.write(s)
-		s = string.gsub(s, '\n', '')
-		client['sender'].write('w' .. s .. '\n')
+		s = string.gsub(s, &apos;\n&apos;, &apos;&apos;)
+		client[&apos;sender&apos;].write(&apos;w&apos; .. s .. &apos;\n&apos;)
 	end
 
 	return client
@@ -237,39 +245,40 @@ end
 
 function buildSender()
 	local sender = {
-		['port'] = 58592,
-		['_buf'] = {},
-		['_sending'] = false,
+		[&apos;port&apos;] = 58592,
+		[&apos;_buf&apos;] = {},
+		[&apos;_sending&apos;] = false,
 	}
 
 	function sender.write(s)
-		table.insert(sender['_buf'], s)
-		if not sender['_sending'] then
+		table.insert(sender[&apos;_buf&apos;], s)
+		if not sender[&apos;_sending&apos;] then
 			sender._send()
 		end
 	end
 
 	function sender.httpReply(port, request, reply)
-		if port ~= sender['port'] then
+		if port ~= sender[&apos;port&apos;] then
 			return
 		end
-		sender['_sending'] = false
-		if #sender['_buf'] &gt; 0 then
+		sender[&apos;_sending&apos;] = false
+		if #sender[&apos;_buf&apos;] &gt; 0 then
 			sender._send()
 		end
 	end
 
 	function sender._send()
-		local buf = table.concat(sender['_buf'])
-		async.httpGet(sender['port'], buf)
-		sender['_buf'] = {}
-		sender['_sending'] = true
+		local buf = table.concat(sender[&apos;_buf&apos;])
+		async.httpGet(sender[&apos;port&apos;], buf)
+		sender[&apos;_buf&apos;] = {}
+		sender[&apos;_sending&apos;] = true
 	end
 
 	return sender
 end
 
-init()">
+init()
+'>
 					<pos x="2" y="1.75"/>
 					<in1 component_id="40" node_index="0">
 						<v bools="0" 01="0" 02="0" 03="0" 04="0" 05="0" 06="0" 07="0" 08="0" 09="0" 10="0" 11="0" 12="0" 13="0" 14="0" 15="0" 16="0" 17="0" 18="0" 19="0" 20="0" 21="0" 22="0" 23="0" 24="0" 25="0" 26="0" 27="0" 28="0" 29="0" 30="0" 31="0" 32="0"/>
@@ -424,32 +433,32 @@ init()">
 					<v bools="0" 01="0" 02="0" 03="0" 04="0" 05="0" 06="0" 07="0" 08="0" 09="0" 10="0" 11="0" 12="0" 13="0" 14="0" 15="0" 16="0" 17="0" 18="0" 19="0" 20="0" 21="0" 22="0" 23="0" 24="0" 25="0" 26="0" 27="0" 28="0" 29="0" 30="0" 31="0" 32="0"/>
 				</out1>
 			</c13>
-			<c14 id="41" script="function init()
+			<c14 id="41" script='function init()
 	-- property --
-	p_active = property.getBool('Active')
-	p_port = property.getNumber('Port')
-	p_title = property.getText('Title')
-	p_numcol = property.getNumber('Number of Columns')
+	p_active = property.getBool(&apos;Active&apos;)
+	p_port = property.getNumber(&apos;Port&apos;)
+	p_title = property.getText(&apos;Title&apos;)
+	p_numcol = property.getNumber(&apos;Number of Columns&apos;)
 
 	p_label = {}
 	for i = 1, p_numcol do
-		p_label[i] = property.getText('Label ' .. string.format('%d', i))
+		p_label[i] = property.getText(&apos;Label &apos; .. string.format(&apos;%d&apos;, i))
 	end
 
 	-- global --
 	g_active = false
 	g_tick = 0
 
-	g_header = {'Tick'}
+	g_header = {&apos;Tick&apos;}
 	for i = 1, p_numcol do
 		local label = p_label[i]
-		label = string.gsub(label, ',', '')
+		label = encodeCSVField(label)
 		table.insert(g_header, label)
 	end
-	g_header = table.concat(g_header, ',')
+	g_header = table.concat(g_header, &apos;,&apos;)
 
 	g_client = buildClient()
-	g_client['sender']['port'] = p_port
+	g_client[&apos;sender&apos;][&apos;port&apos;] = p_port
 end
 
 function onTick()
@@ -465,12 +474,12 @@ function onTick()
 
 	-- write --
 	if g_active then
-		local buf = {string.format('%d', g_tick)}
+		local buf = {string.format(&apos;%d&apos;, g_tick)}
 		for i = 1, p_numcol do
 			local num = input.getNumber(i)
-			table.insert(buf, string.format('%G', num))
+			table.insert(buf, string.format(&apos;%G&apos;, num))
 		end
-		buf = table.concat(buf, ',')
+		buf = table.concat(buf, &apos;,&apos;)
 		g_client.write(buf)
 	end
 
@@ -484,22 +493,30 @@ end
 
 
 function httpReply(port, request, response)
-	g_client['sender'].httpReply(port, request, response)
+	g_client[&apos;sender&apos;].httpReply(port, request, response)
+end
+
+function encodeCSVField(s)
+	if string.match(s, &apos;[\n",]&apos;) ~= fail then
+		s = string.gsub(s, &apos;"&apos;, &apos;""&apos;)
+		s = &apos;"&apos; .. s .. &apos;"&apos;
+	end
+	return s
 end
 
 function buildClient()
 	local client = {
-		['sender'] = buildSender(),
+		[&apos;sender&apos;] = buildSender(),
 	}
 
 	function client.new(title)
-		title = string.gsub(title, '\n', '')
-		client['sender'].write('n' .. title .. '\n')
+		title = string.gsub(title, &apos;\n&apos;, &apos;&apos;)
+		client[&apos;sender&apos;].write(&apos;n&apos; .. title .. &apos;\n&apos;)
 	end
 
 	function client.write(s)
-		s = string.gsub(s, '\n', '')
-		client['sender'].write('w' .. s .. '\n')
+		s = string.gsub(s, &apos;\n&apos;, &apos;&apos;)
+		client[&apos;sender&apos;].write(&apos;w&apos; .. s .. &apos;\n&apos;)
 	end
 
 	return client
@@ -507,39 +524,40 @@ end
 
 function buildSender()
 	local sender = {
-		['port'] = 58592,
-		['_buf'] = {},
-		['_sending'] = false,
+		[&apos;port&apos;] = 58592,
+		[&apos;_buf&apos;] = {},
+		[&apos;_sending&apos;] = false,
 	}
 
 	function sender.write(s)
-		table.insert(sender['_buf'], s)
-		if not sender['_sending'] then
+		table.insert(sender[&apos;_buf&apos;], s)
+		if not sender[&apos;_sending&apos;] then
 			sender._send()
 		end
 	end
 
 	function sender.httpReply(port, request, reply)
-		if port ~= sender['port'] then
+		if port ~= sender[&apos;port&apos;] then
 			return
 		end
-		sender['_sending'] = false
-		if #sender['_buf'] &gt; 0 then
+		sender[&apos;_sending&apos;] = false
+		if #sender[&apos;_buf&apos;] &gt; 0 then
 			sender._send()
 		end
 	end
 
 	function sender._send()
-		local buf = table.concat(sender['_buf'])
-		async.httpGet(sender['port'], buf)
-		sender['_buf'] = {}
-		sender['_sending'] = true
+		local buf = table.concat(sender[&apos;_buf&apos;])
+		async.httpGet(sender[&apos;port&apos;], buf)
+		sender[&apos;_buf&apos;] = {}
+		sender[&apos;_sending&apos;] = true
 	end
 
 	return sender
 end
 
-init()">
+init()
+'>
 				<pos x="2" y="1.75"/>
 				<in1 component_id="40" node_index="0">
 					<v bools="0" 01="0" 02="0" 03="0" 04="0" 05="0" 06="0" 07="0" 08="0" 09="0" 10="0" 11="0" 12="0" 13="0" 14="0" 15="0" 16="0" 17="0" 18="0" 19="0" 20="0" 21="0" 22="0" 23="0" 24="0" 25="0" 26="0" 27="0" 28="0" 29="0" 30="0" 31="0" 32="0"/>

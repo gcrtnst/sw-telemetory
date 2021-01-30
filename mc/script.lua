@@ -17,7 +17,7 @@ function init()
 	g_header = {'Tick'}
 	for i = 1, p_numcol do
 		local label = p_label[i]
-		label = string.gsub(label, ',', '')
+		label = encodeCSVField(label)
 		table.insert(g_header, label)
 	end
 	g_header = table.concat(g_header, ',')
@@ -59,6 +59,14 @@ end
 
 function httpReply(port, request, response)
 	g_client['sender'].httpReply(port, request, response)
+end
+
+function encodeCSVField(s)
+	if string.match(s, '[\n",]') ~= fail then
+		s = string.gsub(s, '"', '""')
+		s = '"' .. s .. '"'
+	end
+	return s
 end
 
 function buildClient()
