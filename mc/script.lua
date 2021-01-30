@@ -75,6 +75,8 @@ function buildClient()
 		s = string.gsub(s, '\n', '')
 		client['sender'].write('w' .. s .. '\n')
 	end
+
+	return client
 end
 
 function buildSender()
@@ -107,6 +109,8 @@ function buildSender()
 		sender['_buf'] = {}
 		sender['_sending'] = true
 	end
+
+	return sender
 end
 
 init()
