@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<microprocessor name="Telemetory" description="No description set." hide_in_inventory="false" width="3" length="3" id_counter="41" id_counter_node="10" transform_index="0" sym0="0" sym1="32766" sym2="16386" sym3="16386" sym4="19970" sym5="19970" sym6="32766" sym7="3584" sym8="3584" sym9="3584" sym10="32704" sym11="16256" sym12="7936" sym13="3584" sym14="1024" sym15="0">
+<microprocessor name="Telemetory" description="No description set." hide_in_inventory="false" width="3" length="3" id_counter="51" id_counter_node="10" transform_index="0" sym0="0" sym1="32766" sym2="16386" sym3="16386" sym4="19970" sym5="19970" sym6="32766" sym7="3584" sym8="3584" sym9="3584" sym10="32704" sym11="16256" sym12="7936" sym13="3584" sym14="1024" sym15="0">
 	<nodes>
 		<n id="2" component_id="7" built_slot_index="0">
 			<node orientation="0" label="Active" mode="1" type="0" description="" flags="0">
@@ -294,6 +294,62 @@ init()
 					</out2>
 				</object>
 			</c>
+			<c type="43">
+				<object id="44" l="Input 1" m="0">
+					<pos x="2" y="0.75"/>
+					<in1 component_id="16" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="45" l="Input 2" m="0">
+					<pos x="2" y="0.25"/>
+					<in1 component_id="17" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="46" l="Input 3" m="0">
+					<pos x="2" y="-0.25"/>
+					<in1 component_id="18" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="47" l="Input 4" m="0">
+					<pos x="2" y="-0.75"/>
+					<in1 component_id="19" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="48" l="Input 5" m="0">
+					<pos x="2" y="-1.25"/>
+					<in1 component_id="20" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="49" l="Input 6" m="0">
+					<pos x="2" y="-1.75"/>
+					<in1 component_id="21" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="50" l="Input 7" m="0">
+					<pos x="2" y="-2.25"/>
+					<in1 component_id="22" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
+			<c type="43">
+				<object id="51" l="Input 8" m="0">
+					<pos x="2" y="-2.75"/>
+					<in1 component_id="23" node_index="0" v="0"/>
+					<in2 component_id="0" node_index="0" v="false"/>
+				</object>
+			</c>
 		</components>
 		<components_bridge>
 			<c type="0">
@@ -572,6 +628,46 @@ init()
 					<v/>
 				</out2>
 			</c14>
+			<c15 id="44" l="Input 1" m="0">
+				<pos x="2" y="0.75"/>
+				<in1 component_id="16" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c15>
+			<c16 id="45" l="Input 2" m="0">
+				<pos x="2" y="0.25"/>
+				<in1 component_id="17" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c16>
+			<c17 id="46" l="Input 3" m="0">
+				<pos x="2" y="-0.25"/>
+				<in1 component_id="18" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c17>
+			<c18 id="47" l="Input 4" m="0">
+				<pos x="2" y="-0.75"/>
+				<in1 component_id="19" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c18>
+			<c19 id="48" l="Input 5" m="0">
+				<pos x="2" y="-1.25"/>
+				<in1 component_id="20" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c19>
+			<c20 id="49" l="Input 6" m="0">
+				<pos x="2" y="-1.75"/>
+				<in1 component_id="21" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c20>
+			<c21 id="50" l="Input 7" m="0">
+				<pos x="2" y="-2.25"/>
+				<in1 component_id="22" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c21>
+			<c22 id="51" l="Input 8" m="0">
+				<pos x="2" y="-2.75"/>
+				<in1 component_id="23" node_index="0" v="0"/>
+				<in2 component_id="0" node_index="0" v="false"/>
+			</c22>
 		</component_states>
 		<component_bridge_states>
 			<c0 id="7">
