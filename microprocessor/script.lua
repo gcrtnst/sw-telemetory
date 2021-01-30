@@ -1,0 +1,112 @@
+function init()
+	-- property --
+	p_active = property.getBool('Active')
+	p_port = property.getNumber('Port')
+	p_title = property.getText('Title')
+	p_numcol = property.getNumber('Number of Columns')
+
+	p_label = {}
+	for i = 1, p_numcol do
+		p_label[i] = property.getText('Label ' .. string.format('%d', i))
+	end
+
+	-- global --
+	g_active = false
+	g_tick = 0
+
+	g_header = {'Tick'}
+	for i = 1, p_numcol do
+		local label = p_label[i]
+		label = string.gsub(label, ',', '')
+		table.insert(g_header, label)
+	end
+	g_header = table.concat(g_header, ',')
+
+	g_client = buildClient()
+	g_client['sender']['port'] = p_port
+end
+
+function onTick()
+	-- active --
+	local active = input.getBool(1)
+	if g_active ~= (p_active or active) then
+		g_active = p_active or active
+		if g_active then
+			g_client.new(p_title)
+			g_client.write(g_header)
+		end
+	end
+
+	-- write --
+	if g_active then
+		local buf = {string.format('%d', g_tick)}
+		for i = 1, p_numcol do
+			local num = input.getNumber(i)
+			table.insert(buf, string.format('%G', num))
+		end
+		buf = table.concat(buf, ',')
+		g_client.write(buf)
+	end
+
+	-- tick --
+	if g_active then
+		g_tick = g_tick + 1
+	else
+		g_tick = 0
+	end
+end
+
+
+function httpReply(port, request, response)
+	g_client['sender'].httpReply(port, request, response)
+end
+
+function buildClient()
+	local client = {
+		['sender'] = buildSender(),
+	}
+
+	function client.new(title)
+		title = string.gsub(title, '\n', '')
+		client['sender'].write('n' .. title .. '\n')
+	end
+
+	function client.write(s)
+		s = string.gsub(s, '\n', '')
+		client['sender'].write('w' .. s .. '\n')
+	end
+end
+
+function buildSender()
+	local sender = {
+		['port'] = 58592,
+		['_buf'] = {},
+		['_sending'] = false,
+	}
+
+	function sender.write(s)
+		table.insert(sender['_buf'], s)
+		if not sender['_sending'] then
+			sender._send()
+		end
+	end
+
+	function sender.httpReply(port, request, reply)
+		if port ~= sender['port'] then
+			return
+		end
+		sender['_sending'] = false
+		if #sender['_buf'] > 0 then
+			sender._send()
+		end
+	end
+
+	function sender._send()
+		local buf = table.concat(sender['_buf'])
+		async.httpGet(sender['port'], buf)
+		sender['_buf'] = {}
+		sender['_sending'] = true
+	end
+end
+
+init()
