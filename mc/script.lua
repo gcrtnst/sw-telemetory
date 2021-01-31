@@ -91,11 +91,23 @@ function buildSender()
 	local sender = {
 		['port'] = 58592,
 		['_buf'] = {},
+		['_buf_size'] = 0,
 		['_sending'] = false,
 	}
 
 	function sender.send(s)
+		local max_buf_size = 498
+
+		if #s <= 0 or #s > max_buf_size then
+			return
+		end
+		sender['_buf_size'] = sender['_buf_size'] + #s
 		table.insert(sender['_buf'], s)
+		while sender['_buf_size'] > max_buf_size do
+			sender['_buf_size'] = sender['_buf_size'] - #sender['_buf'][1]
+			table.remove(sender['_buf'], 1)
+		end
+
 		if not sender['_sending'] then
 			sender._send()
 		end
@@ -106,7 +118,8 @@ function buildSender()
 			return
 		end
 		sender['_sending'] = false
-		if #sender['_buf'] > 0 then
+
+		if sender['_buf_size'] > 0 then
 			sender._send()
 		end
 	end
@@ -115,6 +128,7 @@ function buildSender()
 		local buf = table.concat(sender['_buf'])
 		async.httpGet(sender['port'], buf)
 		sender['_buf'] = {}
+		sender['_buf_size'] = 0
 		sender['_sending'] = true
 	end
 

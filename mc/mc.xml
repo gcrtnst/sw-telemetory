@@ -57,13 +57,13 @@
 			<c type="33">
 				<object id="24" n="Active" on="Always" off="Input" v="true">
 					<pos x="-3" y="1.75"/>
-					<out1 v="false"/>
+					<out1 v="true"/>
 				</object>
 			</c>
 			<c type="34">
 				<object id="25" n="Port">
 					<pos x="-3" y="1.25"/>
-					<out1 v="0"/>
+					<out1 v="58592"/>
 					<v text="58592" value="58592"/>
 				</object>
 			</c>
@@ -75,7 +75,7 @@
 			<c type="19">
 				<object id="29" name="Number of Columns">
 					<pos x="-3" y="0.25"/>
-					<out1 v="0"/>
+					<out1 v="8"/>
 					<min text="1" value="1"/>
 					<max text="8" value="8"/>
 					<int text="1" value="1"/>
@@ -247,11 +247,23 @@ function buildSender()
 	local sender = {
 		[&apos;port&apos;] = 58592,
 		[&apos;_buf&apos;] = {},
+		[&apos;_buf_size&apos;] = 0,
 		[&apos;_sending&apos;] = false,
 	}
 
 	function sender.send(s)
+		local max_buf_size = 498
+
+		if #s &lt;= 0 or #s &gt; max_buf_size then
+			return
+		end
+		sender[&apos;_buf_size&apos;] = sender[&apos;_buf_size&apos;] + #s
 		table.insert(sender[&apos;_buf&apos;], s)
+		while sender[&apos;_buf_size&apos;] &gt; max_buf_size do
+			sender[&apos;_buf_size&apos;] = sender[&apos;_buf_size&apos;] - #sender[&apos;_buf&apos;][1]
+			table.remove(sender[&apos;_buf&apos;], 1)
+		end
+
 		if not sender[&apos;_sending&apos;] then
 			sender._send()
 		end
@@ -262,7 +274,8 @@ function buildSender()
 			return
 		end
 		sender[&apos;_sending&apos;] = false
-		if #sender[&apos;_buf&apos;] &gt; 0 then
+
+		if sender[&apos;_buf_size&apos;] &gt; 0 then
 			sender._send()
 		end
 	end
@@ -271,6 +284,7 @@ function buildSender()
 		local buf = table.concat(sender[&apos;_buf&apos;])
 		async.httpGet(sender[&apos;port&apos;], buf)
 		sender[&apos;_buf&apos;] = {}
+		sender[&apos;_buf_size&apos;] = 0
 		sender[&apos;_sending&apos;] = true
 	end
 
@@ -420,11 +434,11 @@ init()
 		<component_states>
 			<c0 id="24" n="Active" on="Always" off="Input" v="true">
 				<pos x="-3" y="1.75"/>
-				<out1 v="false"/>
+				<out1 v="true"/>
 			</c0>
 			<c1 id="25" n="Port">
 				<pos x="-3" y="1.25"/>
-				<out1 v="0"/>
+				<out1 v="58592"/>
 				<v text="58592" value="58592"/>
 			</c1>
 			<c2 id="26" n="Title" v="telemetory">
@@ -432,7 +446,7 @@ init()
 			</c2>
 			<c3 id="29" name="Number of Columns">
 				<pos x="-3" y="0.25"/>
-				<out1 v="0"/>
+				<out1 v="8"/>
 				<min text="1" value="1"/>
 				<max text="8" value="8"/>
 				<int text="1" value="1"/>
@@ -582,11 +596,23 @@ function buildSender()
 	local sender = {
 		[&apos;port&apos;] = 58592,
 		[&apos;_buf&apos;] = {},
+		[&apos;_buf_size&apos;] = 0,
 		[&apos;_sending&apos;] = false,
 	}
 
 	function sender.send(s)
+		local max_buf_size = 498
+
+		if #s &lt;= 0 or #s &gt; max_buf_size then
+			return
+		end
+		sender[&apos;_buf_size&apos;] = sender[&apos;_buf_size&apos;] + #s
 		table.insert(sender[&apos;_buf&apos;], s)
+		while sender[&apos;_buf_size&apos;] &gt; max_buf_size do
+			sender[&apos;_buf_size&apos;] = sender[&apos;_buf_size&apos;] - #sender[&apos;_buf&apos;][1]
+			table.remove(sender[&apos;_buf&apos;], 1)
+		end
+
 		if not sender[&apos;_sending&apos;] then
 			sender._send()
 		end
@@ -597,7 +623,8 @@ function buildSender()
 			return
 		end
 		sender[&apos;_sending&apos;] = false
-		if #sender[&apos;_buf&apos;] &gt; 0 then
+
+		if sender[&apos;_buf_size&apos;] &gt; 0 then
 			sender._send()
 		end
 	end
@@ -606,6 +633,7 @@ function buildSender()
 		local buf = table.concat(sender[&apos;_buf&apos;])
 		async.httpGet(sender[&apos;port&apos;], buf)
 		sender[&apos;_buf&apos;] = {}
+		sender[&apos;_buf_size&apos;] = 0
 		sender[&apos;_sending&apos;] = true
 	end
 
