@@ -76,12 +76,12 @@ function buildClient()
 
 	function client.new(title)
 		title = string.gsub(title, '\n', '')
-		client['sender'].write('n' .. title .. '\n')
+		client['sender'].send('n' .. title .. '\n')
 	end
 
 	function client.write(s)
 		s = string.gsub(s, '\n', '')
-		client['sender'].write('w' .. s .. '\n')
+		client['sender'].send('w' .. s .. '\n')
 	end
 
 	return client
@@ -94,7 +94,7 @@ function buildSender()
 		['_sending'] = false,
 	}
 
-	function sender.write(s)
+	function sender.send(s)
 		table.insert(sender['_buf'], s)
 		if not sender['_sending'] then
 			sender._send()

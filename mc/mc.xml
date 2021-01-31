@@ -57,13 +57,13 @@
 			<c type="33">
 				<object id="24" n="Active" on="Always" off="Input" v="true">
 					<pos x="-3" y="1.75"/>
-					<out1 v="true"/>
+					<out1 v="false"/>
 				</object>
 			</c>
 			<c type="34">
 				<object id="25" n="Port">
 					<pos x="-3" y="1.25"/>
-					<out1 v="58592"/>
+					<out1 v="0"/>
 					<v text="58592" value="58592"/>
 				</object>
 			</c>
@@ -75,7 +75,7 @@
 			<c type="19">
 				<object id="29" name="Number of Columns">
 					<pos x="-3" y="0.25"/>
-					<out1 v="8"/>
+					<out1 v="0"/>
 					<min text="1" value="1"/>
 					<max text="8" value="8"/>
 					<int text="1" value="1"/>
@@ -232,12 +232,12 @@ function buildClient()
 
 	function client.new(title)
 		title = string.gsub(title, &apos;\n&apos;, &apos;&apos;)
-		client[&apos;sender&apos;].write(&apos;n&apos; .. title .. &apos;\n&apos;)
+		client[&apos;sender&apos;].send(&apos;n&apos; .. title .. &apos;\n&apos;)
 	end
 
 	function client.write(s)
 		s = string.gsub(s, &apos;\n&apos;, &apos;&apos;)
-		client[&apos;sender&apos;].write(&apos;w&apos; .. s .. &apos;\n&apos;)
+		client[&apos;sender&apos;].send(&apos;w&apos; .. s .. &apos;\n&apos;)
 	end
 
 	return client
@@ -250,7 +250,7 @@ function buildSender()
 		[&apos;_sending&apos;] = false,
 	}
 
-	function sender.write(s)
+	function sender.send(s)
 		table.insert(sender[&apos;_buf&apos;], s)
 		if not sender[&apos;_sending&apos;] then
 			sender._send()
@@ -420,11 +420,11 @@ init()
 		<component_states>
 			<c0 id="24" n="Active" on="Always" off="Input" v="true">
 				<pos x="-3" y="1.75"/>
-				<out1 v="true"/>
+				<out1 v="false"/>
 			</c0>
 			<c1 id="25" n="Port">
 				<pos x="-3" y="1.25"/>
-				<out1 v="58592"/>
+				<out1 v="0"/>
 				<v text="58592" value="58592"/>
 			</c1>
 			<c2 id="26" n="Title" v="telemetory">
@@ -432,7 +432,7 @@ init()
 			</c2>
 			<c3 id="29" name="Number of Columns">
 				<pos x="-3" y="0.25"/>
-				<out1 v="8"/>
+				<out1 v="0"/>
 				<min text="1" value="1"/>
 				<max text="8" value="8"/>
 				<int text="1" value="1"/>
@@ -567,12 +567,12 @@ function buildClient()
 
 	function client.new(title)
 		title = string.gsub(title, &apos;\n&apos;, &apos;&apos;)
-		client[&apos;sender&apos;].write(&apos;n&apos; .. title .. &apos;\n&apos;)
+		client[&apos;sender&apos;].send(&apos;n&apos; .. title .. &apos;\n&apos;)
 	end
 
 	function client.write(s)
 		s = string.gsub(s, &apos;\n&apos;, &apos;&apos;)
-		client[&apos;sender&apos;].write(&apos;w&apos; .. s .. &apos;\n&apos;)
+		client[&apos;sender&apos;].send(&apos;w&apos; .. s .. &apos;\n&apos;)
 	end
 
 	return client
@@ -585,7 +585,7 @@ function buildSender()
 		[&apos;_sending&apos;] = false,
 	}
 
-	function sender.write(s)
+	function sender.send(s)
 		table.insert(sender[&apos;_buf&apos;], s)
 		if not sender[&apos;_sending&apos;] then
 			sender._send()
