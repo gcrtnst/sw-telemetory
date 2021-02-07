@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"log"
 	"net"
 	"os"
@@ -73,17 +72,5 @@ func (s *Server) ListenAndServe(port int) error {
 func (s *Server) Serve(lis net.Listener) (err error) {
 	s.cfg.Log.Printf("listening on %s://%s", lis.Addr().Network(), lis.Addr().String())
 
-	m := NewMachine(s.cfg.MachineConfig())
-	rd := NewReaderTimeout(lis, s.cfg.Timeout)
-	defer s.cg.Add(rd).CloseCatch(&err)
-	sc := bufio.NewScanner(rd)
-	sc.Split(bufio.ScanLines)
-
-	for sc.Scan() {
-		err = m.Exec(sc.Text())
-		if err != nil {
-			return
-		}
-	}
-	return sc.Err()
+	panic("TODO")
 }
