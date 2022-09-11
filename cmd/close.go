@@ -9,15 +9,7 @@ type CloseGroup struct {
 }
 
 func (g *CloseGroup) Add(c io.Closer) *CloseMember {
-	m := &CloseMember{
-		c:    c,
-		greq: &g.req,
-		mreq: &Wall{},
-		done: make(chan struct{}),
-		err:  nil,
-	}
-	m.init()
-	return m
+	return newCloseMember(c, &g.req)
 }
 
 func (g *CloseGroup) CloseAll() {
@@ -32,6 +24,18 @@ type CloseMember struct {
 	err  error
 }
 
+func newCloseMember(c io.Closer, greq *Wall) *CloseMember {
+	m := &CloseMember{
+		c:    c,
+		greq: greq,
+		mreq: &Wall{},
+		done: make(chan struct{}),
+		err:  nil,
+	}
+	m.init()
+	return m
+}
+
 func (m *CloseMember) Close() error {
 	m.mreq.Break()
 	<-m.done
@@ -39,11 +43,10 @@ func (m *CloseMember) Close() error {
 }
 
 func (m *CloseMember) CloseCatch(err *error) {
-	if *err != nil {
-		m.Close()
-		return
+	e := m.Close()
+	if *err == nil {
+		*err = e
 	}
-	*err = m.Close()
 }
 
 func (m *CloseMember) init() {
@@ -54,7 +57,7 @@ func (m *CloseMember) init() {
 		go m.worker()
 		return
 	}
-	m.closeImmediately()
+	m.closeForce()
 }
 
 func (m *CloseMember) worker() {
@@ -62,10 +65,10 @@ func (m *CloseMember) worker() {
 	case <-m.greq.Wait():
 	case <-m.mreq.Wait():
 	}
-	m.closeImmediately()
+	m.closeForce()
 }
 
-func (m *CloseMember) closeImmediately() {
+func (m *CloseMember) closeForce() {
 	m.err = m.c.Close()
 	close(m.done)
 }
