@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var ErrInvalidChunkPrefix = errors.New("invalid chunk prefix")
+
 type Receiver struct {
 	lis     net.Listener
 	timeout time.Duration
@@ -61,7 +63,7 @@ func (r *Receiver) recvChunk() ([]byte, error) {
 	if !ok {
 		br = bufio.NewReader(conn)
 	}
-	return ReadChunk(br)
+	return ReadChunkOld(br)
 }
 
 var (
@@ -69,8 +71,29 @@ var (
 	chunkSuffix = []byte(" HTTP/1.1\r\n")
 )
 
-func ReadChunk(br io.ByteReader) ([]byte, error) {
+func ReadChunkOld(br io.ByteReader) ([]byte, error) {
 	return ReadUntil(br, chunkSuffix)
+}
+
+func ReadChunk(br io.ByteReader) ([]byte, error) {
+	buf := make([]byte, 0, 8192)
+	for {
+		b, err := br.ReadByte()
+		if err == io.EOF {
+			return buf, io.ErrUnexpectedEOF
+		}
+		if err != nil {
+			return buf, err
+		}
+
+		buf = append(buf, b)
+		if len(buf) == len(chunkPrefix) && !bytes.Equal(buf, chunkPrefix) {
+			return buf, ErrInvalidChunkPrefix
+		}
+		if len(buf) >= len(chunkPrefix)+len(chunkSuffix) && bytes.HasSuffix(buf, chunkSuffix) {
+			return buf, nil
+		}
+	}
 }
 
 func ReadUntil(br io.ByteReader, delim []byte) ([]byte, error) {

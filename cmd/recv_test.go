@@ -69,6 +69,47 @@ func TestReceiverRecvChunk(t *testing.T) {
 	}
 }
 
+func TestReadChunk(t *testing.T) {
+	testErr := errors.New("")
+
+	cases := []struct {
+		inS     string
+		inErr   error
+		wantBuf string
+		wantErr error
+		wantLen int
+	}{
+		{"", io.EOF, "", io.ErrUnexpectedEOF, 0},
+		{"GET", io.EOF, "GET", io.ErrUnexpectedEOF, 0},
+		{"GET ", io.EOF, "GET ", io.ErrUnexpectedEOF, 0},
+		{"GET  ", io.EOF, "GET  ", io.ErrUnexpectedEOF, 0},
+		{"GOT", io.EOF, "GOT", io.ErrUnexpectedEOF, 0},
+		{"GOT ", io.EOF, "GOT ", ErrInvalidChunkPrefix, 0},
+		{"GOT  ", io.EOF, "GOT ", ErrInvalidChunkPrefix, 1},
+		{"", testErr, "", testErr, 0},
+		{"GET", testErr, "GET", testErr, 0},
+		{"GET HTTP/1.1\r\n", io.EOF, "GET HTTP/1.1\r\n", io.ErrUnexpectedEOF, 0},
+		{"GET  HTTP/1.2\r\n", io.EOF, "GET  HTTP/1.2\r\n", io.ErrUnexpectedEOF, 0},
+		{"GET  HTTP/1.1\r\n", io.EOF, "GET  HTTP/1.1\r\n", nil, 0},
+		{"GET   HTTP/1.1\r\n", io.EOF, "GET   HTTP/1.1\r\n", nil, 0},
+		{"GET  HTTP/1.1\r\n ", io.EOF, "GET  HTTP/1.1\r\n", nil, 1},
+	}
+
+	for i, c := range cases {
+		in := &mockByteReader{br: strings.NewReader(c.inS), err: c.inErr}
+		gotBuf, gotErr := ReadChunk(in)
+		if string(gotBuf) != c.wantBuf {
+			t.Errorf("case %d: buf: expected %#v, got %#v", i, c.wantBuf, string(gotBuf))
+		}
+		if gotErr != c.wantErr {
+			t.Errorf(`case %d: err: expected "%s", got "%s"`, i, c.wantErr, gotErr)
+		}
+		if in.br.Len() != c.wantLen {
+			t.Errorf("case %d: len: expected %d, got %d", i, c.wantLen, in.br.Len())
+		}
+	}
+}
+
 func TestReadUntil(t *testing.T) {
 	tests := []struct {
 		in    string
@@ -132,6 +173,19 @@ func TestExtractBody(t *testing.T) {
 			t.Errorf("input %#v: wrong error", tt.reqline)
 		}
 	}
+}
+
+type mockByteReader struct {
+	br  *strings.Reader
+	err error
+}
+
+func (m *mockByteReader) ReadByte() (byte, error) {
+	b, err := m.br.ReadByte()
+	if err == io.EOF {
+		return b, m.err
+	}
+	return b, err
 }
 
 type mockListener struct {
