@@ -4,79 +4,134 @@ import (
 	"testing"
 )
 
-func TestWall(t *testing.T) {
+func TestWallWaitNoBreak(t *testing.T) {
 	w := &Wall{}
 	select {
 	case <-w.Wait():
-		t.Error("wall broken")
+		t.Fail()
 	default:
 	}
+}
 
-	w = &Wall{}
+func TestWallWaitBeforeBreak(t *testing.T) {
+	w := &Wall{}
 	wait := w.Wait()
 	w.Break()
 	select {
 	case <-wait:
 	default:
-		t.Error("wall not broken")
+		t.Fail()
 	}
+}
 
-	w = &Wall{}
+func TestWallWaitAfterBreak(t *testing.T) {
+	w := &Wall{}
 	w.Break()
 	select {
 	case <-w.Wait():
 	default:
-		t.Error("wall not broken")
+		t.Fail()
 	}
 }
 
-func TestWallWait(t *testing.T) {
-	closed := make(chan struct{})
-	close(closed)
+func TestWallWaitNil(t *testing.T) {
+	w := &Wall{ch: nil}
+	wait := w.Wait()
 
-	tests := []chan struct{}{
-		nil,
-		make(chan struct{}),
-		closed,
+	if wait == nil {
+		t.Error()
 	}
-	for i, tt := range tests {
-		w := &Wall{ch: tt}
-		ch := w.Wait()
-		if ch != w.ch {
-			t.Errorf("case %d: ch != w.ch", i)
-		}
-		if tt == nil {
-			if ch == nil {
-				t.Errorf("case %d: ch == nil", i)
-			}
-		} else {
-			if ch != tt {
-				t.Errorf("case %d: ch != tt", i)
-			}
-		}
+	select {
+	case <-wait:
+		t.Error()
+	default:
 	}
 }
 
-func TestWallBreak(t *testing.T) {
-	closed := make(chan struct{})
-	close(closed)
+func TestWallWaitOpen(t *testing.T) {
+	ch := make(chan struct{})
+	w := &Wall{ch: ch}
+	wait := w.Wait()
 
-	tests := []chan struct{}{
-		nil,
-		make(chan struct{}),
-		closed,
+	if w.ch != ch {
+		t.Error()
 	}
-	for i, tt := range tests {
-		w := &Wall{ch: tt}
-		w.Break()
-		if w.ch == nil {
-			t.Errorf("case %d: non-nil channel", i)
-			continue
-		}
-		select {
-		case <-w.ch:
-		default:
-			t.Errorf("case %d: channel not closed", i)
-		}
+	if wait != w.ch {
+		t.Error()
+	}
+	if wait == nil {
+		t.Error()
+	}
+	select {
+	case <-wait:
+		t.Error()
+	default:
+	}
+}
+
+func TestWallWaitClose(t *testing.T) {
+	ch := make(chan struct{})
+	close(ch)
+	w := &Wall{ch: ch}
+	wait := w.Wait()
+
+	if w.ch != ch {
+		t.Error()
+	}
+	if wait != w.ch {
+		t.Error()
+	}
+	if wait == nil {
+		t.Error()
+	}
+	select {
+	case <-wait:
+	default:
+		t.Error()
+	}
+}
+
+func TestWallBreakNil(t *testing.T) {
+	w := &Wall{ch: nil}
+	w.Break()
+
+	if w.ch == nil {
+		t.Error()
+	}
+	select {
+	case <-w.ch:
+	default:
+		t.Error()
+	}
+}
+
+func TestWallBreakOpen(t *testing.T) {
+	ch := make(chan struct{})
+	w := &Wall{ch: ch}
+	w.Break()
+
+	if w.ch != ch {
+		t.Error()
+	}
+	select {
+	case <-w.ch:
+	default:
+		t.Error()
+	}
+}
+
+func TestWallBreakClose(t *testing.T) {
+	ch := make(chan struct{})
+	close(ch)
+	w := &Wall{ch: ch}
+	w.Break()
+
+	if w.ch != ch {
+		t.Error()
+	}
+	select {
+	case <-w.ch:
+	default:
+		t.Error()
 	}
 }
