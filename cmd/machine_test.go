@@ -91,7 +91,7 @@ func TestMachineExecWrite(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if string(b) != s + "\n" {
+	if string(b) != s+"\n" {
 		t.Error("wrong data was written")
 		return
 	}
