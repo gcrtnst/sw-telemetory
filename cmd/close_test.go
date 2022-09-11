@@ -5,81 +5,135 @@ import (
 	"testing"
 )
 
-func TestCloseMemberInit(t *testing.T) {
-	for i := 0; i < 1000; i++ {
-		mcnt := 0
-		c := &mockCloser{func() error {
-			mcnt++
-			return nil
-		}}
-		m := &CloseMember{
-			c:    c,
-			greq: &Wall{},
-			mreq: &Wall{},
-			done: make(chan struct{}),
-			err:  nil,
-		}
-		m.greq.Break()
-		m.init()
-		if cnt := mcnt; cnt != 1 {
-			t.Errorf("expected cnt==1, got cnt==%d", cnt)
-			break
-		}
+func TestCloseGroupCloseAllAfterAdd(t *testing.T) {
+	mock1 := mockCloser{ch: make(chan struct{})}
+	mock2 := mockCloser{ch: make(chan struct{})}
+
+	cg := &CloseGroup{}
+	cg.Add(mock1)
+	cg.Add(mock2)
+	cg.CloseAll()
+	<-mock1.ch
+	<-mock2.ch
+}
+
+func TestCloseGroupCloseAllBeforeAdd(t *testing.T) {
+	mock1 := mockCloser{ch: make(chan struct{})}
+	mock2 := mockCloser{ch: make(chan struct{})}
+
+	cg := &CloseGroup{}
+	cg.CloseAll()
+	cg.Add(mock1)
+	cg.Add(mock2)
+	<-mock1.ch
+	<-mock2.ch
+}
+
+func TestCloseGroupCloseAllMultiple(t *testing.T) {
+	mock1 := mockCloser{ch: make(chan struct{})}
+	mock2 := mockCloser{ch: make(chan struct{})}
+
+	cg := &CloseGroup{}
+	cg.Add(mock1)
+	cg.Add(mock2)
+	cg.CloseAll()
+	<-mock1.ch
+	<-mock2.ch
+
+	cg.CloseAll()
+}
+
+func TestCloseMemberCloseBeforeCloseAll(t *testing.T) {
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	cg := &CloseGroup{}
+	err := cg.Add(mock).Close()
+	select {
+	case <-mock.ch:
+	default:
+		t.Error()
+	}
+	if err != mock.err {
+		t.Error()
 	}
 
-	mcnt := 0
-	c := &mockCloser{func() error {
-		mcnt++
-		return nil
-	}}
-	m := &CloseMember{
-		c:    c,
-		greq: &Wall{},
-		mreq: &Wall{},
-		done: make(chan struct{}),
-		err:  nil,
-	}
-	m.init()
-	m.greq.Break()
-	<-m.done
-	if cnt := mcnt; cnt != 1 {
-		t.Errorf("expected cnt==1, got cnt==%d", cnt)
+	cg.CloseAll()
+}
+
+func TestCloseMemberCloseAfterCloseAll(t *testing.T) {
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	cg := &CloseGroup{}
+	cm := cg.Add(mock)
+	cg.CloseAll()
+	<-mock.ch
+	err := cm.Close()
+	if err != mock.err {
+		t.Error()
 	}
 }
 
-func TestCloseGroupNested(t *testing.T) {
-	err := errors.New("TEST")
-	for i := 0; i < 1000; i++ {
-		mcnt := 0
-		g := &CloseGroup{}
-		c10 := &mockCloser{func() error {
-			mcnt++
-			return err
-		}}
-		c20 := &mockCloser{func() error {
-			g.CloseAll()
-			return nil
-		}}
-		m11 := g.Add(c10)
-		m12 := g.Add(m11)
-		m21 := g.Add(c20)
-		m22 := g.Add(m21)
+func TestCloseMemberCloseMultiple(t *testing.T) {
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
 
-		_ = m22.Close()
-		<-m12.done
-		if cnt := mcnt; cnt != 1 {
-			t.Errorf("expected cnt==1, got cnt==%d", cnt)
-		}
-		if m12.err != err {
-			t.Errorf("got wrong error: %#v", m12.err)
-		}
+	cg := &CloseGroup{}
+	cm := cg.Add(mock)
+	err1 := cm.Close()
+	select {
+	case <-mock.ch:
+	default:
+		t.Error()
+	}
+	if err1 != mock.err {
+		t.Error()
+	}
+
+	err2 := cm.Close()
+	if err2 != mock.err {
+		t.Error()
+	}
+}
+
+func TestCloseMemberCloseCatchAssignError(t *testing.T) {
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	var err error
+	cg := &CloseGroup{}
+	cg.Add(mock).CloseCatch(&err)
+	select {
+	case <-mock.ch:
+	default:
+		t.Error()
+	}
+	if err != mock.err {
+		t.Error()
+	}
+}
+
+func TestCloseMemberCloseCatchIgnoreError(t *testing.T) {
+	err_back := errors.New("back")
+	err_mock := errors.New("mock")
+	mock := mockCloser{ch: make(chan struct{}), err: err_mock}
+
+	err := err_back
+	cg := &CloseGroup{}
+	cg.Add(mock).CloseCatch(&err)
+	select {
+	case <-mock.ch:
+	default:
+		t.Error()
+	}
+	if err != err_back {
+		t.Error()
 	}
 }
 
 type mockCloser struct {
-	f func() error
+	ch  chan struct{}
+	err error
 }
 
-func (c *mockCloser) Close() error {
-	return c.f()
+func (m mockCloser) Close() error {
+	close(m.ch)
+	return m.err
 }
