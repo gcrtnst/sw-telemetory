@@ -41,8 +41,8 @@ func TestReceiverRecv(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		inRecv := NewReceiver(c.inLis)
-		gotBody, gotErr := inRecv.Recv()
+		inRx := NewReceiver(c.inLis)
+		gotBody, gotErr := inRx.Recv()
 		if !((gotBody == nil && c.wantBody == nil) || (gotBody != nil && c.wantBody != nil && bytes.Equal(gotBody, c.wantBody))) {
 			t.Errorf("case %d: body: expected %#v, got %#v", i, c.wantBody, gotBody)
 		}
@@ -114,8 +114,8 @@ func TestReceiverRecvChunk(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		inRecv := NewReceiver(c.inLis)
-		gotChunk, gotErr := inRecv.RecvChunk()
+		inRx := NewReceiver(c.inLis)
+		gotChunk, gotErr := inRx.RecvChunk()
 
 		if !bytes.Equal(gotChunk, c.wantChunk) {
 			t.Errorf("case %d: chunk: expected %#v, got %#v", i, c.wantChunk, gotChunk)
@@ -130,12 +130,12 @@ func TestReceiverRecvChunk(t *testing.T) {
 }
 
 func TestReceiverClose(t *testing.T) {
-	inRecv := NewReceiver(&mockListener{closeErr: errors.New("")})
-	gotErr := inRecv.Close()
-	if gotErr != inRecv.lis.(*mockListener).closeErr {
-		t.Errorf(`err: expected "%s", got "%s"`, inRecv.lis.(*mockListener).closeErr, gotErr)
+	inRx := NewReceiver(&mockListener{closeErr: errors.New("")})
+	gotErr := inRx.Close()
+	if gotErr != inRx.lis.(*mockListener).closeErr {
+		t.Errorf(`err: expected "%s", got "%s"`, inRx.lis.(*mockListener).closeErr, gotErr)
 	}
-	if !inRecv.lis.(*mockListener).closeDone {
+	if !inRx.lis.(*mockListener).closeDone {
 		t.Error("conn not closed")
 	}
 }

@@ -5,14 +5,14 @@ import (
 )
 
 type Reader struct {
-	recv *Receiver
-	buf  []byte
+	rx  *Receiver
+	buf []byte
 }
 
 func NewReader(lis net.Listener) *Reader {
 	return &Reader{
-		recv: NewReceiver(lis),
-		buf:  []byte{},
+		rx:  NewReceiver(lis),
+		buf: []byte{},
 	}
 }
 
@@ -24,7 +24,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 	if n > 0 {
 		return n, nil
 	}
-	buf, err := r.recv.Recv()
+	buf, err := r.rx.Recv()
 	if err != nil {
 		return 0, err
 	}
@@ -34,7 +34,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 }
 
 func (r *Reader) Close() error {
-	return r.recv.Close()
+	return r.rx.Close()
 }
 
 func (r *Reader) readBuffer(p []byte) int {

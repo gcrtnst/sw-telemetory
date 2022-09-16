@@ -110,8 +110,8 @@ func TestReaderRead(t *testing.T) {
 			closeErr:  nil,
 		})
 		inRd := &Reader{
-			recv: inRx,
-			buf:  c.inBuf,
+			rx:  inRx,
+			buf: c.inBuf,
 		}
 
 		gotP := make([]byte, c.inPSize)

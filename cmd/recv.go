@@ -27,20 +27,20 @@ func NewReceiver(lis net.Listener) *Receiver {
 	}
 }
 
-func (r *Receiver) Recv() ([]byte, error) {
-	chunk, err := r.RecvChunk()
+func (rx *Receiver) Recv() ([]byte, error) {
+	chunk, err := rx.RecvChunk()
 	if err != nil {
 		return nil, err
 	}
 	return chunk[len(chunkPrefix) : len(chunk)-len(chunkSuffix)], nil
 }
 
-func (r *Receiver) RecvChunk() (chunk []byte, err error) {
-	conn, errAccept := r.lis.Accept()
+func (rx *Receiver) RecvChunk() (chunk []byte, err error) {
+	conn, errAccept := rx.lis.Accept()
 	if errAccept != nil {
 		return []byte{}, errAccept
 	}
-	defer r.cg.Add(conn).CloseCatch(&err)
+	defer rx.cg.Add(conn).CloseCatch(&err)
 
 	br, ok := conn.(io.ByteReader)
 	if !ok {
@@ -49,9 +49,9 @@ func (r *Receiver) RecvChunk() (chunk []byte, err error) {
 	return ReadChunk(br)
 }
 
-func (r *Receiver) Close() error {
-	err := r.lis.Close()
-	r.cg.CloseAll()
+func (rx *Receiver) Close() error {
+	err := rx.lis.Close()
+	rx.cg.CloseAll()
 	return err
 }
 
