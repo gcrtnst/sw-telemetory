@@ -35,12 +35,6 @@ func (r *Receiver) Recv() ([]byte, error) {
 	return chunk[len(chunkPrefix) : len(chunk)-len(chunkSuffix)], nil
 }
 
-func (r *Receiver) Close() error {
-	err := r.lis.Close()
-	r.cg.CloseAll()
-	return err
-}
-
 func (r *Receiver) RecvChunk() (chunk []byte, err error) {
 	conn, errAccept := r.lis.Accept()
 	if errAccept != nil {
@@ -53,6 +47,12 @@ func (r *Receiver) RecvChunk() (chunk []byte, err error) {
 		br = bufio.NewReader(conn)
 	}
 	return ReadChunk(br)
+}
+
+func (r *Receiver) Close() error {
+	err := r.lis.Close()
+	r.cg.CloseAll()
+	return err
 }
 
 func ReadChunk(br io.ByteReader) ([]byte, error) {
