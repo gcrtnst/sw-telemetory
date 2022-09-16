@@ -48,29 +48,6 @@ func (r *Receiver) Close() error {
 	return err
 }
 
-func (r *Receiver) recvChunk() ([]byte, error) {
-	conn, err := r.lis.Accept()
-	if err != nil {
-		return nil, err
-	}
-	defer r.cg.Add(conn).Close()
-
-	if r.timeout > 0 {
-		_ = conn.SetDeadline(time.Now().Add(r.timeout))
-	} else {
-		_ = conn.SetDeadline(time.Time{})
-	}
-	if conn, ok := conn.(*net.TCPConn); ok {
-		_ = conn.SetLinger(0)
-	}
-
-	br, ok := conn.(io.ByteReader)
-	if !ok {
-		br = bufio.NewReader(conn)
-	}
-	return ReadChunk(br)
-}
-
 func (r *Receiver) RecvChunk() (chunk []byte, err error) {
 	conn, errAccept := r.lis.Accept()
 	if errAccept != nil {

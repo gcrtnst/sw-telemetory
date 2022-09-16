@@ -87,65 +87,6 @@ func TestReceiverRecvChunk(t *testing.T) {
 	}
 }
 
-func TestReceiverRecvChunkOld(t *testing.T) {
-	merr := errors.New("TEST")
-	lis := &mockListenerOld{
-		err: merr,
-	}
-	r := &Receiver{
-		lis:     lis,
-		timeout: 0,
-		cg:      CloseGroup{},
-	}
-	_, err := r.recvChunk()
-	if err != merr {
-		t.Errorf("got wrong error: %v", err)
-	}
-
-	buf := string(chunkPrefix) + "abc" + string(chunkSuffix)
-	conn := &mockConnOld{
-		rd:       strings.NewReader(buf),
-		closed:   false,
-		deadline: time.Time{},
-	}
-	lis = &mockListenerOld{
-		conns: []net.Conn{conn},
-	}
-	r = &Receiver{
-		lis:     lis,
-		timeout: 0,
-		cg:      CloseGroup{},
-	}
-	chunk, _ := r.recvChunk()
-	if string(chunk) != buf {
-		t.Errorf("expected \"%s\", got \"%s\"", buf, string(chunk))
-	}
-	if !conn.closed {
-		t.Errorf("conn not closed")
-	}
-	if !conn.deadline.IsZero() {
-		t.Errorf("expected no deadline, got %v", conn.deadline)
-	}
-
-	conn = &mockConnOld{
-		rd:       strings.NewReader("GET abc HTTP/1.1\r\n"),
-		closed:   false,
-		deadline: time.Time{},
-	}
-	lis = &mockListenerOld{
-		conns: []net.Conn{conn},
-	}
-	r = &Receiver{
-		lis:     lis,
-		timeout: 1,
-		cg:      CloseGroup{},
-	}
-	r.recvChunk()
-	if conn.deadline.IsZero() {
-		t.Errorf("expected deadline, got no deadline")
-	}
-}
-
 func TestReadChunk(t *testing.T) {
 	testErr := errors.New("")
 
