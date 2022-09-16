@@ -3,11 +3,79 @@ package main
 import (
 	"bytes"
 	"io"
+	"net"
 	"strings"
 	"testing"
 )
 
 func TestReaderRead(t *testing.T) {
+	cases := []struct {
+		inChunk []string
+		wantB   []byte
+		wantErr error
+	}{
+		{
+			inChunk: []string{},
+			wantB:   []byte{},
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{""},
+			wantB:   []byte{},
+			wantErr: io.ErrUnexpectedEOF,
+		},
+		{
+			inChunk: []string{"GET  HTTP/1.1\r\n"},
+			wantB:   []byte{},
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET BBB HTTP/1.1\r\n"},
+			wantB:   []byte("BBB"),
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET " + strings.Repeat("B", 8192) + " HTTP/1.1\r\n"},
+			wantB:   []byte(strings.Repeat("B", 8192)),
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET BBB HTTP/1.1\r\n", "GET  HTTP/1.1\r\n"},
+			wantB:   []byte("BBB"),
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET BBB HTTP/1.1\r\n", "GET CCC HTTP/1.1\r\n"},
+			wantB:   []byte("BBBCCC"),
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET BBB HTTP/1.1\r\n", "GET " + strings.Repeat("C", 8192) + " HTTP/1.1\r\n"},
+			wantB:   []byte("BBB" + strings.Repeat("C", 8192)),
+			wantErr: nil,
+		},
+		{
+			inChunk: []string{"GET BBB HTTP/1.1\r\n", "GET  HTTP/1.1\r\n", "GET CCC HTTP/1.1\r\n"},
+			wantB:   []byte("BBBCCC"),
+			wantErr: nil,
+		},
+	}
+
+	for i, c := range cases {
+		inLis := &mockMultiConnListener{chunk: c.inChunk, idx: 0}
+		inRd := NewReader(inLis)
+
+		gotB, gotErr := io.ReadAll(inRd)
+		if !bytes.Equal(gotB, c.wantB) {
+			t.Errorf("case %d: b: expected %#v, got %#v", i, c.wantB, gotB)
+		}
+		if gotErr != c.wantErr {
+			t.Errorf(`case %d: err: expected "%s", got "%s"`, i, c.wantErr, gotErr)
+		}
+	}
+}
+
+func TestReaderReadUnit(t *testing.T) {
 	cases := []struct {
 		inPSize int
 		inRxTxt string
@@ -130,4 +198,21 @@ func TestReaderRead(t *testing.T) {
 			t.Errorf("case %d: buf: expected %#v, got %#v", i, c.wantBuf, inRd.buf)
 		}
 	}
+}
+
+type mockMultiConnListener struct {
+	chunk []string
+	idx   int
+}
+
+func (m *mockMultiConnListener) Close() error   { return nil }
+func (m *mockMultiConnListener) Addr() net.Addr { panic("not implemented") }
+
+func (m *mockMultiConnListener) Accept() (net.Conn, error) {
+	if m.idx >= len(m.chunk) {
+		return nil, io.EOF
+	}
+	conn := &mockConn{readInner: strings.NewReader(m.chunk[m.idx]), closeErr: nil}
+	m.idx++
+	return conn, nil
 }
