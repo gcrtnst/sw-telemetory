@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -108,42 +107,6 @@ func TestReadChunk(t *testing.T) {
 		}
 	}
 }
-
-func TestReadUntil(t *testing.T) {
-	tests := []struct {
-		in    string
-		delim string
-		out   string
-		err   error
-	}{
-		{"", "", "", nil},
-		{"", "TEST", "", io.EOF},
-		{"TEST", "", "", nil},
-		{"TEST", "TEST", "TEST", nil},
-		{"TESTTEST", "TEST", "TEST", nil},
-		{"TEST", "TESTTEST", "TEST", io.EOF},
-		{"FOO", "BAR", "FOO", io.EOF},
-		{"FOOBAR", "BAR", "FOOBAR", nil},
-	}
-	for _, tt := range tests {
-		r := strings.NewReader(tt.in)
-		delim := []byte(tt.delim)
-		out, err := ReadUntil(r, delim)
-		if !reflect.DeepEqual(string(out), tt.out) {
-			t.Errorf("input %#v, %#v: got %#v, want %#v", tt.in, tt.delim, out, tt.out)
-		}
-		if !errors.Is(err, tt.err) {
-			t.Errorf("input %#v, %#v: got error %#v, want %#v", tt.in, tt.delim, err, tt.err)
-		}
-		if len(tt.in)-r.Len() != len(tt.out) {
-			t.Errorf("input %#v, %#v: wrong amount consumed", tt.in, tt.delim)
-		}
-		if !reflect.DeepEqual(delim, []byte(tt.delim)) {
-			t.Errorf("input %#v, %#v: delim modified", tt.in, tt.delim)
-		}
-	}
-}
-
 func TestExtractBody(t *testing.T) {
 	prefix := string(chunkPrefix)
 	suffix := string(chunkSuffix)

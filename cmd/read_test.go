@@ -51,7 +51,7 @@ func TestReaderRead(t *testing.T) {
 			inRecvBuf: "",
 			outP:      "\x00",
 			outN:      0,
-			outErr:    io.EOF,
+			outErr:    io.ErrUnexpectedEOF,
 			outRdBuf:  "",
 		},
 		{
