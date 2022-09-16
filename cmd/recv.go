@@ -35,7 +35,7 @@ func NewReceiverTimeout(lis net.Listener, timeout time.Duration) *Receiver {
 }
 
 func (r *Receiver) Recv() ([]byte, error) {
-	chunk, err := r.recvChunk()
+	chunk, err := r.RecvChunk()
 	if err != nil {
 		return nil, err
 	}
