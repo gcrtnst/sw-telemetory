@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"net"
@@ -10,8 +11,85 @@ import (
 )
 
 func TestReceiverRecvChunk(t *testing.T) {
+	testErr := errors.New("")
+
+	cases := []struct {
+		inLis     *mockListener
+		wantChunk []byte
+		wantErr   error
+	}{
+		{
+			inLis: &mockListener{
+				acceptConn: nil,
+				acceptErr:  testErr,
+			},
+			wantChunk: []byte{},
+			wantErr:   testErr,
+		},
+		{
+			inLis: &mockListener{
+				acceptConn: &mockConn{
+					readInner: strings.NewReader("GETS"),
+					closeErr:  nil,
+				},
+				acceptErr: nil,
+			},
+			wantChunk: []byte("GETS"),
+			wantErr:   ErrInvalidChunkPrefix,
+		},
+		{
+			inLis: &mockListener{
+				acceptConn: &mockConn{
+					readInner: strings.NewReader("GET  HTTP/1.1\r\n"),
+					closeErr:  testErr,
+				},
+				acceptErr: nil,
+			},
+			wantChunk: []byte("GET  HTTP/1.1\r\n"),
+			wantErr:   testErr,
+		},
+		{
+			inLis: &mockListener{
+				acceptConn: &mockConn{
+					readInner: strings.NewReader("GET  HTTP/1.1\r\n"),
+					closeErr:  nil,
+				},
+				acceptErr: nil,
+			},
+			wantChunk: []byte("GET  HTTP/1.1\r\n"),
+			wantErr:   nil,
+		},
+		{
+			inLis: &mockListener{
+				acceptConn: &mockByteReaderConn{
+					readInner: strings.NewReader("GET  HTTP/1.1\r\n"),
+				},
+				acceptErr: nil,
+			},
+			wantChunk: []byte("GET  HTTP/1.1\r\n"),
+			wantErr:   nil,
+		},
+	}
+
+	for i, c := range cases {
+		inRecv := NewReceiver(c.inLis)
+		gotChunk, gotErr := inRecv.RecvChunk()
+
+		if !bytes.Equal(gotChunk, c.wantChunk) {
+			t.Errorf("case %d: chunk: expected %#v, got %#v", i, c.wantChunk, gotChunk)
+		}
+		if gotErr != c.wantErr {
+			t.Errorf(`case %d: err: expected "%s", got "%s"`, i, c.wantErr, gotErr)
+		}
+		if conn, ok := c.inLis.acceptConn.(*mockConn); ok && !conn.closeDone {
+			t.Errorf("case %d: conn not closed", i)
+		}
+	}
+}
+
+func TestReceiverRecvChunkOld(t *testing.T) {
 	merr := errors.New("TEST")
-	lis := &mockListener{
+	lis := &mockListenerOld{
 		err: merr,
 	}
 	r := &Receiver{
@@ -25,12 +103,12 @@ func TestReceiverRecvChunk(t *testing.T) {
 	}
 
 	buf := string(chunkPrefix) + "abc" + string(chunkSuffix)
-	conn := &mockConn{
+	conn := &mockConnOld{
 		rd:       strings.NewReader(buf),
 		closed:   false,
 		deadline: time.Time{},
 	}
-	lis = &mockListener{
+	lis = &mockListenerOld{
 		conns: []net.Conn{conn},
 	}
 	r = &Receiver{
@@ -49,12 +127,12 @@ func TestReceiverRecvChunk(t *testing.T) {
 		t.Errorf("expected no deadline, got %v", conn.deadline)
 	}
 
-	conn = &mockConn{
+	conn = &mockConnOld{
 		rd:       strings.NewReader("GET abc HTTP/1.1\r\n"),
 		closed:   false,
 		deadline: time.Time{},
 	}
-	lis = &mockListener{
+	lis = &mockListenerOld{
 		conns: []net.Conn{conn},
 	}
 	r = &Receiver{
@@ -108,6 +186,48 @@ func TestReadChunk(t *testing.T) {
 	}
 }
 
+type mockListener struct {
+	acceptConn net.Conn
+	acceptErr  error
+}
+
+func (m *mockListener) Accept() (net.Conn, error) { return m.acceptConn, m.acceptErr }
+func (m *mockListener) Close() error              { panic("not implemented") }
+func (m *mockListener) Addr() net.Addr            { panic("not implemented") }
+
+type mockConn struct {
+	readInner *strings.Reader
+	closeErr  error
+	closeDone bool
+}
+
+func (m *mockConn) Read(b []byte) (int, error)         { return m.readInner.Read(b) }
+func (m *mockConn) Write(b []byte) (int, error)        { panic("not implemented") }
+func (m *mockConn) LocalAddr() net.Addr                { panic("not implemented") }
+func (m *mockConn) RemoteAddr() net.Addr               { panic("not implemented") }
+func (m *mockConn) SetDeadline(t time.Time) error      { panic("not implemented") }
+func (m *mockConn) SetReadDeadline(t time.Time) error  { panic("not implemented") }
+func (m *mockConn) SetWriteDeadline(t time.Time) error { panic("not implemented") }
+
+func (m *mockConn) Close() error {
+	m.closeDone = true
+	return m.closeErr
+}
+
+type mockByteReaderConn struct {
+	readInner *strings.Reader
+}
+
+func (m *mockByteReaderConn) ReadByte() (byte, error)            { return m.readInner.ReadByte() }
+func (m *mockByteReaderConn) Read(b []byte) (int, error)         { panic("not implemented") }
+func (m *mockByteReaderConn) Write(b []byte) (int, error)        { panic("not implemented") }
+func (m *mockByteReaderConn) Close() error                       { return nil }
+func (m *mockByteReaderConn) LocalAddr() net.Addr                { panic("not implemented") }
+func (m *mockByteReaderConn) RemoteAddr() net.Addr               { panic("not implemented") }
+func (m *mockByteReaderConn) SetDeadline(t time.Time) error      { panic("not implemented") }
+func (m *mockByteReaderConn) SetReadDeadline(t time.Time) error  { panic("not implemented") }
+func (m *mockByteReaderConn) SetWriteDeadline(t time.Time) error { panic("not implemented") }
+
 type mockByteReader struct {
 	br  *strings.Reader
 	err error
@@ -121,13 +241,13 @@ func (m *mockByteReader) ReadByte() (byte, error) {
 	return b, err
 }
 
-type mockListener struct {
+type mockListenerOld struct {
 	conns  []net.Conn
 	err    error
 	closed bool
 }
 
-func (l *mockListener) Accept() (net.Conn, error) {
+func (l *mockListenerOld) Accept() (net.Conn, error) {
 	if len(l.conns) <= 0 {
 		return nil, l.err
 	}
@@ -136,62 +256,62 @@ func (l *mockListener) Accept() (net.Conn, error) {
 	return conn, nil
 }
 
-func (l *mockListener) Close() error {
+func (l *mockListenerOld) Close() error {
 	l.closed = true
 	return nil
 }
 
-func (l *mockListener) Addr() net.Addr {
-	return &mockAddr{
+func (l *mockListenerOld) Addr() net.Addr {
+	return &mockAddrOld{
 		network: "TEST",
 		address: "TEST",
 	}
 }
 
-type mockConn struct {
+type mockConnOld struct {
 	rd       *strings.Reader
 	closed   bool
 	deadline time.Time
 }
 
-func (c *mockConn) Read(b []byte) (int, error) {
+func (c *mockConnOld) Read(b []byte) (int, error) {
 	return c.rd.Read(b)
 }
 
-func (c *mockConn) Write(b []byte) (int, error) {
+func (c *mockConnOld) Write(b []byte) (int, error) {
 	panic("not implemented")
 }
 
-func (c *mockConn) Close() error {
+func (c *mockConnOld) Close() error {
 	c.closed = true
 	return nil
 }
 
-func (c *mockConn) LocalAddr() net.Addr {
+func (c *mockConnOld) LocalAddr() net.Addr {
 	panic("not implemented")
 }
 
-func (c *mockConn) RemoteAddr() net.Addr {
+func (c *mockConnOld) RemoteAddr() net.Addr {
 	panic("not implemented")
 }
 
-func (c *mockConn) SetDeadline(t time.Time) error {
+func (c *mockConnOld) SetDeadline(t time.Time) error {
 	c.deadline = t
 	return nil
 }
 
-func (c *mockConn) SetReadDeadline(t time.Time) error {
+func (c *mockConnOld) SetReadDeadline(t time.Time) error {
 	panic("not implemented")
 }
 
-func (c *mockConn) SetWriteDeadline(t time.Time) error {
+func (c *mockConnOld) SetWriteDeadline(t time.Time) error {
 	panic("not implemented")
 }
 
-type mockAddr struct {
+type mockAddrOld struct {
 	network string
 	address string
 }
 
-func (a *mockAddr) Network() string { return a.network }
-func (a *mockAddr) String() string  { return a.address }
+func (a *mockAddrOld) Network() string { return a.network }
+func (a *mockAddrOld) String() string  { return a.address }

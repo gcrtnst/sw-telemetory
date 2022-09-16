@@ -13,13 +13,13 @@ func TestServerServe(t *testing.T) {
 	cfg := NewServerConfig()
 	cfg.Log = log.New(ioutil.Discard, "", log.LstdFlags)
 
-	conn1 := &mockConn{
+	conn1 := &mockConnOld{
 		rd: strings.NewReader(string(chunkPrefix) + "n\n" + string(chunkSuffix)),
 	}
-	conn2 := &mockConn{
+	conn2 := &mockConnOld{
 		rd: strings.NewReader(string(chunkPrefix) + "n\n" + string(chunkSuffix)),
 	}
-	lis := &mockListener{
+	lis := &mockListenerOld{
 		conns: []net.Conn{conn1, conn2},
 		err:   errors.New("TEST"),
 	}
@@ -38,13 +38,13 @@ func TestServerServe(t *testing.T) {
 		t.Errorf("conn2 not closed")
 	}
 
-	conn1 = &mockConn{
+	conn1 = &mockConnOld{
 		rd: strings.NewReader(string(chunkPrefix) + "\x00\n" + string(chunkSuffix)),
 	}
-	conn2 = &mockConn{
+	conn2 = &mockConnOld{
 		rd: strings.NewReader(string(chunkPrefix) + "\x00\n" + string(chunkSuffix)),
 	}
-	lis = &mockListener{
+	lis = &mockListenerOld{
 		conns: []net.Conn{conn1, conn2},
 		err:   errors.New("TEST"),
 	}

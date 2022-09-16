@@ -83,12 +83,12 @@ func TestReaderRead(t *testing.T) {
 		},
 	}
 	for i, tt := range tests {
-		conn := &mockConn{
+		conn := &mockConnOld{
 			rd:       strings.NewReader(tt.inRecvBuf),
 			closed:   false,
 			deadline: time.Time{},
 		}
-		lis := &mockListener{
+		lis := &mockListenerOld{
 			conns: []net.Conn{conn},
 		}
 		recv := &Receiver{
