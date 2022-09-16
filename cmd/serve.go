@@ -5,11 +5,9 @@ import (
 	"log"
 	"net"
 	"os"
-	"time"
 )
 
 type ServerConfig struct {
-	Timeout  time.Duration
 	Root     string
 	Title    string
 	Ext      string
@@ -20,7 +18,6 @@ type ServerConfig struct {
 
 func NewServerConfig() ServerConfig {
 	return ServerConfig{
-		Timeout:  DefaultTimeout,
 		Root:     DefaultRoot,
 		Title:    DefaultTitle,
 		Ext:      DefaultExt,
@@ -74,7 +71,7 @@ func (s *Server) Serve(lis net.Listener) (err error) {
 	s.cfg.Log.Printf("listening on %s://%s", lis.Addr().Network(), lis.Addr().String())
 
 	m := NewMachine(s.cfg.MachineConfig())
-	rd := NewReaderTimeout(lis, s.cfg.Timeout)
+	rd := NewReader(lis)
 	defer s.cg.Add(rd).CloseCatch(&err)
 	sc := bufio.NewScanner(rd)
 	sc.Split(bufio.ScanLines)

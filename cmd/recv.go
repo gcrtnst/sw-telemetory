@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"time"
 )
 
 var ErrInvalidChunkPrefix = errors.New("invalid chunk prefix")
@@ -17,20 +16,14 @@ var (
 )
 
 type Receiver struct {
-	lis     net.Listener
-	timeout time.Duration
-	cg      CloseGroup
+	lis net.Listener
+	cg  CloseGroup
 }
 
 func NewReceiver(lis net.Listener) *Receiver {
-	return NewReceiverTimeout(lis, 0)
-}
-
-func NewReceiverTimeout(lis net.Listener, timeout time.Duration) *Receiver {
 	return &Receiver{
-		lis:     lis,
-		timeout: timeout,
-		cg:      CloseGroup{},
+		lis: lis,
+		cg:  CloseGroup{},
 	}
 }
 

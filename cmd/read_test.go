@@ -92,9 +92,8 @@ func TestReaderRead(t *testing.T) {
 			conns: []net.Conn{conn},
 		}
 		recv := &Receiver{
-			lis:     lis,
-			timeout: 0,
-			cg:      CloseGroup{},
+			lis: lis,
+			cg:  CloseGroup{},
 		}
 		rd := &Reader{
 			recv: recv,

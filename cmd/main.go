@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"os"
-	"time"
 )
 
 func main() {
@@ -26,7 +25,6 @@ func main() {
 
 const (
 	DefaultPort     = 58592
-	DefaultTimeout  = 1 * time.Second
 	DefaultRoot     = "."
 	DefaultTitle    = "telemetory"
 	DefaultExt      = ".csv"

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net"
-	"time"
 )
 
 type Reader struct {
@@ -11,12 +10,8 @@ type Reader struct {
 }
 
 func NewReader(lis net.Listener) *Reader {
-	return NewReaderTimeout(lis, 0)
-}
-
-func NewReaderTimeout(lis net.Listener, timeout time.Duration) *Reader {
 	return &Reader{
-		recv: NewReceiverTimeout(lis, timeout),
+		recv: NewReceiver(lis),
 		buf:  []byte{},
 	}
 }
