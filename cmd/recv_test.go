@@ -107,35 +107,6 @@ func TestReadChunk(t *testing.T) {
 		}
 	}
 }
-func TestExtractBody(t *testing.T) {
-	prefix := string(chunkPrefix)
-	suffix := string(chunkSuffix)
-
-	tests := []struct {
-		reqline string
-		cmd     string
-		err     bool
-	}{
-		{"", "", true},
-		{prefix, "", true},
-		{suffix, "", true},
-		{prefix + "/ HTTP/1.1", "", true},
-		{prefix[:len(prefix)-1] + suffix, "", true},
-		{prefix + suffix, "", false},
-		{prefix + "/" + suffix, "/", false},
-		{prefix + "abc" + suffix, "abc", false},
-		{prefix + "newline\nallowed" + suffix, "newline\nallowed", false},
-	}
-	for _, tt := range tests {
-		body, err := ExtractBody([]byte(tt.reqline))
-		if string(body) != tt.cmd {
-			t.Errorf("input %#v: got %#v, want %#v", tt.reqline, body, tt.cmd)
-		}
-		if (err != nil) != tt.err {
-			t.Errorf("input %#v: wrong error", tt.reqline)
-		}
-	}
-}
 
 type mockByteReader struct {
 	br  *strings.Reader
