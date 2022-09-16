@@ -136,7 +136,7 @@ func TestReceiverClose(t *testing.T) {
 		t.Errorf(`err: expected "%s", got "%s"`, inRx.lis.(*mockListener).closeErr, gotErr)
 	}
 	if !inRx.lis.(*mockListener).closeDone {
-		t.Error("conn not closed")
+		t.Error("lis not closed")
 	}
 }
 

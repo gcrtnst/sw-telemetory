@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"net"
 	"strings"
@@ -197,6 +198,18 @@ func TestReaderReadUnit(t *testing.T) {
 		if !bytes.Equal(inRd.buf, c.wantBuf) {
 			t.Errorf("case %d: buf: expected %#v, got %#v", i, c.wantBuf, inRd.buf)
 		}
+	}
+}
+
+func TestReaderClose(t *testing.T) {
+	inLis := &mockListener{closeErr: errors.New("")}
+	inRd := NewReader(inLis)
+	gotErr := inRd.Close()
+	if gotErr != inLis.closeErr {
+		t.Errorf(`err: expected "%s", got "%s"`, inLis.closeErr, gotErr)
+	}
+	if !inLis.closeDone {
+		t.Errorf("lis not closed")
 	}
 }
 
