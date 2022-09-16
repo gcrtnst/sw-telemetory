@@ -87,7 +87,7 @@ func ReadChunk(br io.ByteReader) ([]byte, error) {
 		}
 
 		buf = append(buf, b)
-		if len(buf) == len(chunkPrefix) && !bytes.Equal(buf, chunkPrefix) {
+		if len(buf) <= len(chunkPrefix) && b != chunkPrefix[len(buf)-1] {
 			return buf, ErrInvalidChunkPrefix
 		}
 		if len(buf) >= len(chunkPrefix)+len(chunkSuffix) && bytes.HasSuffix(buf, chunkSuffix) {
