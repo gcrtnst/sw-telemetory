@@ -129,6 +129,17 @@ func TestReceiverRecvChunk(t *testing.T) {
 	}
 }
 
+func TestReceiverClose(t *testing.T) {
+	inRecv := NewReceiver(&mockListener{closeErr: errors.New("")})
+	gotErr := inRecv.Close()
+	if gotErr != inRecv.lis.(*mockListener).closeErr {
+		t.Errorf(`err: expected "%s", got "%s"`, inRecv.lis.(*mockListener).closeErr, gotErr)
+	}
+	if !inRecv.lis.(*mockListener).closeDone {
+		t.Error("conn not closed")
+	}
+}
+
 func TestReadChunk(t *testing.T) {
 	testErr := errors.New("")
 
@@ -172,11 +183,17 @@ func TestReadChunk(t *testing.T) {
 type mockListener struct {
 	acceptConn net.Conn
 	acceptErr  error
+	closeErr   error
+	closeDone  bool
 }
 
 func (m *mockListener) Accept() (net.Conn, error) { return m.acceptConn, m.acceptErr }
-func (m *mockListener) Close() error              { panic("not implemented") }
 func (m *mockListener) Addr() net.Addr            { panic("not implemented") }
+
+func (m *mockListener) Close() error {
+	m.closeDone = true
+	return m.closeErr
+}
 
 type mockConn struct {
 	readInner *strings.Reader
