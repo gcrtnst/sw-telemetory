@@ -10,6 +10,48 @@ import (
 	"time"
 )
 
+func TestReceiverRecv(t *testing.T) {
+	cases := []struct {
+		inLis    *mockListener
+		wantBody []byte
+		wantErr  error
+	}{
+		{
+			inLis: &mockListener{
+				acceptConn: &mockConn{
+					readInner: strings.NewReader("GETS"),
+					closeErr:  nil,
+				},
+				acceptErr: nil,
+			},
+			wantBody: nil,
+			wantErr:  ErrInvalidChunkPrefix,
+		},
+		{
+			inLis: &mockListener{
+				acceptConn: &mockConn{
+					readInner: strings.NewReader("GET abc HTTP/1.1\r\n"),
+					closeErr:  nil,
+				},
+				acceptErr: nil,
+			},
+			wantBody: []byte("abc"),
+			wantErr:  nil,
+		},
+	}
+
+	for i, c := range cases {
+		inRecv := NewReceiver(c.inLis)
+		gotBody, gotErr := inRecv.Recv()
+		if !((gotBody == nil && c.wantBody == nil) || (gotBody != nil && c.wantBody != nil && bytes.Equal(gotBody, c.wantBody))) {
+			t.Errorf("case %d: body: expected %#v, got %#v", i, c.wantBody, gotBody)
+		}
+		if gotErr != c.wantErr {
+			t.Errorf(`case %d: err: expected "%s", got "%s"`, i, c.wantErr, gotErr)
+		}
+	}
+}
+
 func TestReceiverRecvChunk(t *testing.T) {
 	testErr := errors.New("")
 
