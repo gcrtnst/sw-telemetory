@@ -60,7 +60,7 @@ func (m *Machine) ExecNew(title string) error {
 	if title == "" {
 		title = m.cfg.Title
 	}
-	fpath, err := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext)
+	fpath, err := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext, time.Now())
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (m *Machine) ExecNew(title string) error {
 
 func (m *Machine) ExecWrite(s string) (err error) {
 	if m.fpath == "" {
-		fpath, err := GenerateFilepath(m.cfg.Root, m.cfg.Title, m.cfg.Ext)
+		fpath, err := GenerateFilepath(m.cfg.Root, m.cfg.Title, m.cfg.Ext, time.Now())
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,13 @@ func (m *Machine) setFilepath(fpath string) {
 	m.cfg.Log.Printf("writing to \"%s\"", fpath)
 }
 
-func GenerateFilepath(root, title, ext string) (string, error) {
+func GenerateFilepath(root, title, ext string, t time.Time) (string, error) {
+	if root == "" {
+		return "", errors.New("empty root")
+	}
+	if title == "" {
+		return "", errors.New("empty title")
+	}
 	if i := IndexPathSeparator(title); i >= 0 {
 		return "", fmt.Errorf("title has disallowed character '%s'", title[i:i+1])
 	}
@@ -111,8 +117,11 @@ func GenerateFilepath(root, title, ext string) (string, error) {
 	if i := IndexPathSeparator(ext); i >= 0 {
 		return "", fmt.Errorf("file extension has disallowed character '%s'", ext[i:i+1])
 	}
+	if ext != "" && ext[0] != '.' {
+		return "", errors.New("file extension does not start with '.'")
+	}
 
-	fpath := filepath.Join(root, title, title+"-"+time.Now().Format("20060102150405")+ext)
+	fpath := filepath.Join(root, title, title+"-"+t.Format("20060102150405")+ext)
 	return fpath, nil
 }
 
