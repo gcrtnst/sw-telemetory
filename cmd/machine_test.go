@@ -119,9 +119,10 @@ func TestGenerateFilepath(t *testing.T) {
 
 func TestIndexPathSeparator(t *testing.T) {
 	sep := string(os.PathSeparator)
-	tests := []struct {
-		s string
-		i int
+
+	cases := []struct {
+		inS   string
+		wantI int
 	}{
 		{"", -1},
 		{"test", -1},
@@ -129,10 +130,11 @@ func TestIndexPathSeparator(t *testing.T) {
 		{"te" + sep + "st", 2},
 		{"test" + sep, 4},
 	}
-	for _, tt := range tests {
-		i := IndexPathSeparator(tt.s)
-		if i != tt.i {
-			t.Errorf("input %#v: got %#v, want %#v", tt.s, i, tt.i)
+
+	for i, c := range cases {
+		gotI := IndexPathSeparator(c.inS)
+		if gotI != c.wantI {
+			t.Errorf("case %d: expected %d, got %d", i, c.wantI, gotI)
 		}
 	}
 }
