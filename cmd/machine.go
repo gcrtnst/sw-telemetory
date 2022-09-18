@@ -50,7 +50,7 @@ func (m *Machine) Exec(cmd string) error {
 	case 'n':
 		return m.ExecNew(cmd[1:])
 	case 'w':
-		return m.ExecWrite(cmd[1:])
+		return m.ExecWrite(cmd[1:], time.Now())
 	default:
 		return fmt.Errorf("unknown command '%s'", cmd[0:1])
 	}
@@ -68,32 +68,8 @@ func (m *Machine) ExecNew(title string) error {
 	return nil
 }
 
-func (m *Machine) ExecWrite(s string) (err error) {
-	if m.fpath == "" {
-		fpath, err := GenerateFilepath(m.cfg.Root, m.cfg.Title, m.cfg.Ext, time.Now())
-		if err != nil {
-			return err
-		}
-		m.setFilepath(fpath)
-	}
-
-	err = os.MkdirAll(filepath.Dir(m.fpath), m.cfg.DirMode)
-	if err != nil {
-		return err
-	}
-	f, err := os.OpenFile(m.fpath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, m.cfg.FileMode)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			f.Close()
-			return
-		}
-		err = f.Close()
-	}()
-	_, err = f.Write([]byte(s + "\n"))
-	return err
+func (m *Machine) ExecWrite(s string, t time.Time) error {
+	return m.write("", s, t)
 }
 
 func (m *Machine) setFilepath(fpath string) {
