@@ -158,6 +158,30 @@ func TestCloseOnCancelClose(t *testing.T) {
 	}
 }
 
+func TestCloseCatchAssignError(t *testing.T) {
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	var err error
+	CloseCatch(mock, &err)
+	<-mock.ch
+	if err != mock.err {
+		t.Error()
+	}
+}
+
+func TestCloseCatchIgnoreError(t *testing.T) {
+	err_back := errors.New("back")
+	err_mock := errors.New("mock")
+	mock := mockCloser{ch: make(chan struct{}), err: err_mock}
+
+	err := err_back
+	CloseCatch(mock, &err)
+	<-mock.ch
+	if err != err_back {
+		t.Error()
+	}
+}
+
 type mockCloser struct {
 	ch  chan struct{}
 	err error

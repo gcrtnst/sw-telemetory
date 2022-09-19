@@ -102,3 +102,10 @@ func (c *onCancelCloser) Close() error {
 	<-c.done
 	return c.err
 }
+
+func CloseCatch(c io.Closer, err *error) {
+	e := c.Close()
+	if *err == nil {
+		*err = e
+	}
+}
