@@ -26,7 +26,7 @@ func TestMachineExec(t *testing.T) {
 	}{
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -42,7 +42,7 @@ func TestMachineExec(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -58,7 +58,7 @@ func TestMachineExec(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -74,7 +74,7 @@ func TestMachineExec(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -90,7 +90,7 @@ func TestMachineExec(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -104,7 +104,7 @@ func TestMachineExec(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -165,7 +165,7 @@ func TestMachineExecNew(t *testing.T) {
 	}{
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -183,7 +183,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -201,7 +201,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -219,7 +219,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -237,7 +237,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -255,7 +255,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -273,7 +273,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -291,7 +291,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -309,7 +309,7 @@ func TestMachineExecNew(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -384,7 +384,7 @@ func TestMachineExecWrite(t *testing.T) {
 	}{
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -402,7 +402,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -420,7 +420,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -438,7 +438,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -456,7 +456,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -474,7 +474,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -492,7 +492,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",
@@ -510,7 +510,7 @@ func TestMachineExecWrite(t *testing.T) {
 		},
 		{
 			inM: &Machine{
-				cfg: MachineConfig{
+				cfg: &MachineConfig{
 					Root:  root,
 					Title: "default",
 					Ext:   ".ext",

@@ -28,8 +28,8 @@ func NewServerConfig() ServerConfig {
 	}
 }
 
-func (cfg ServerConfig) MachineConfig() MachineConfig {
-	return MachineConfig{
+func (cfg ServerConfig) MachineConfig() *MachineConfig {
+	return &MachineConfig{
 		Root:     cfg.Root,
 		Title:    cfg.Title,
 		Ext:      cfg.Ext,

@@ -19,8 +19,8 @@ type MachineConfig struct {
 	Log      *log.Logger
 }
 
-func NewMachineConfig() MachineConfig {
-	return MachineConfig{
+func NewMachineConfig() *MachineConfig {
+	return &MachineConfig{
 		Root:     DefaultRoot,
 		Title:    DefaultTitle,
 		Ext:      DefaultExt,
@@ -31,11 +31,11 @@ func NewMachineConfig() MachineConfig {
 }
 
 type Machine struct {
-	cfg   MachineConfig
+	cfg   *MachineConfig
 	fpath string
 }
 
-func NewMachine(cfg MachineConfig) *Machine {
+func NewMachine(cfg *MachineConfig) *Machine {
 	return &Machine{
 		cfg:   cfg,
 		fpath: "",
