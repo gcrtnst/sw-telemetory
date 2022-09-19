@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 type ServerConfig struct {
@@ -77,7 +78,7 @@ func (s *Server) Serve(lis net.Listener) (err error) {
 	sc.Split(bufio.ScanLines)
 
 	for sc.Scan() {
-		err = m.Exec(sc.Text())
+		err = m.Exec(sc.Text(), time.Now())
 		if err != nil {
 			return
 		}

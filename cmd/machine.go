@@ -42,15 +42,15 @@ func NewMachine(cfg MachineConfig) *Machine {
 	}
 }
 
-func (m *Machine) Exec(cmd string) error {
+func (m *Machine) Exec(cmd string, t time.Time) error {
 	if len(cmd) <= 0 {
 		return errors.New("empty command")
 	}
 	switch cmd[0] {
 	case 'n':
-		return m.ExecNew(cmd[1:], time.Now())
+		return m.ExecNew(cmd[1:], t)
 	case 'w':
-		return m.ExecWrite(cmd[1:], time.Now())
+		return m.ExecWrite(cmd[1:], t)
 	default:
 		return fmt.Errorf("unknown command '%s'", cmd[0:1])
 	}

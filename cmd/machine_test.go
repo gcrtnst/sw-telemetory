@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,35 +12,138 @@ import (
 )
 
 func TestMachineExec(t *testing.T) {
-	root, err := ioutil.TempDir("", "*")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		err := os.RemoveAll(root)
-		if err != nil {
-			t.Error(err)
-		}
-	})
+	tmp := t.TempDir()
+	root := filepath.Join(tmp, "root")
+	testT := time.Date(2006, time.January, 2, 15, 4, 5, 999999999, time.FixedZone("UTC-7", -7*60*60))
 
-	cfg := NewMachineConfig()
-	cfg.Root = root
-	cfg.Log = log.New(ioutil.Discard, "", log.LstdFlags)
-	m := NewMachine(cfg)
-
-	tests := []struct {
-		cmd string
-		err bool
+	cases := []struct {
+		inM         *Machine
+		inCmd       string
+		inT         time.Time
+		wantIsErr   bool
+		wantTmpName string
+		wantTmpData []byte
 	}{
-		{"", true},
-		{"n", false},
-		{"w", false},
-		{"/", true},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:       "n",
+			inT:         testT,
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(root, "default", "default-20060102150405.ext"),
+			wantTmpData: []byte{},
+		},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:       "ntitle",
+			inT:         testT,
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(root, "title", "title-20060102150405.ext"),
+			wantTmpData: []byte{},
+		},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:       "w",
+			inT:         testT,
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			wantTmpData: []byte{},
+		},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:       "wout",
+			inT:         testT,
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			wantTmpData: []byte("out"),
+		},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:     "",
+			inT:       testT,
+			wantIsErr: true,
+		},
+		{
+			inM: &Machine{
+				cfg: MachineConfig{
+					Root:  root,
+					Title: "default",
+					Ext:   ".ext",
+					Log:   log.New(io.Discard, "", 0),
+				},
+				fpath: filepath.Join(root, "fpath", "fpath-20060102150405.ext"),
+			},
+			inCmd:     "z",
+			inT:       testT,
+			wantIsErr: true,
+		},
 	}
-	for _, tt := range tests {
-		err := m.Exec(tt.cmd)
-		if (err != nil) != tt.err {
-			t.Errorf("input %#v: wrong error", tt.cmd)
+
+	for i, c := range cases {
+		err := os.Mkdir(root, 0o777)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		gotErr := c.inM.Exec(c.inCmd, c.inT)
+		gotIsErr := gotErr != nil
+
+		if gotIsErr != c.wantIsErr {
+			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotErr)
+		}
+		if !gotIsErr {
+			var gotTmpData []byte
+			gotTmpData, err = os.ReadFile(c.wantTmpName)
+			if err != nil {
+				t.Errorf("case %d: data: %v", i, err)
+			}
+			if !bytes.Equal(gotTmpData, c.wantTmpData) {
+				t.Errorf(`case %d: data: expected "%s", got "%s"`, i, string(c.wantTmpData), string(gotTmpData))
+			}
+		}
+
+		err = os.RemoveAll(root)
+		if err != nil {
+			t.Fatal(err)
 		}
 	}
 }
