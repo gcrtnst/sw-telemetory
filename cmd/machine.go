@@ -48,7 +48,7 @@ func (m *Machine) Exec(cmd string) error {
 	}
 	switch cmd[0] {
 	case 'n':
-		return m.ExecNew(cmd[1:])
+		return m.ExecNew(cmd[1:], time.Now())
 	case 'w':
 		return m.ExecWrite(cmd[1:], time.Now())
 	default:
@@ -56,66 +56,46 @@ func (m *Machine) Exec(cmd string) error {
 	}
 }
 
-func (m *Machine) ExecNew(title string) error {
-	if title == "" {
-		title = m.cfg.Title
-	}
-	fpath, err := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext, time.Now())
+func (m *Machine) ExecNew(title string, t time.Time) error {
+	err := m.internalNew(title, t)
 	if err != nil {
 		return err
 	}
-	m.setFilepath(fpath)
-	return nil
+
+	return m.internalWrite("", os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
 }
 
 func (m *Machine) ExecWrite(s string, t time.Time) error {
-	return m.write("", s, t)
-}
-
-func (m *Machine) setFilepath(fpath string) {
-	m.fpath = fpath
-	m.cfg.Log.Printf("writing to \"%s\"", fpath)
-}
-
-func (m *Machine) write(title, s string, t time.Time) (err error) {
 	flag := os.O_WRONLY | os.O_APPEND | os.O_CREATE
-
-	if title != "" || m.fpath == "" {
-		if title == "" {
-			title = m.cfg.Title
-		}
-		fpath, errFpath := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext, t)
-		if errFpath != nil {
-			return errFpath
-		}
-		m.cfg.Log.Printf(`writing to "%s"`, fpath)
-		m.fpath = fpath
+	if m.fpath == "" {
 		flag = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	}
 
-	errMkdir := os.MkdirAll(filepath.Dir(m.fpath), 0o777)
-	if errMkdir != nil {
-		return errMkdir
-	}
-
-	f, errOpen := os.OpenFile(m.fpath, flag, 0o666)
-	if errOpen != nil {
-		return errOpen
-	}
-	defer func() {
-		errClose := f.Close()
-		if err == nil {
-			err = errClose
-		}
-	}()
-
-	if s != "" {
-		_, errWrite := f.Write([]byte(s))
-		if errWrite != nil {
+		err := m.internalNew("", t)
+		if err != nil {
 			return err
 		}
 	}
+	return m.internalWrite(s, flag)
+}
+
+func (m *Machine) internalNew(title string, t time.Time) error {
+	if title == "" {
+		title = m.cfg.Title
+	}
+	fpath, err := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext, t)
+	if err != nil {
+		return err
+	}
+	m.cfg.Log.Printf(`writing to "%s"`, fpath)
+	m.fpath = fpath
 	return nil
+}
+
+func (m *Machine) internalWrite(s string, flag int) error {
+	if m.fpath == "" {
+		panic("m.fpath is empty")
+	}
+	return WriteFile(m.fpath, []byte(s), flag)
 }
 
 func GenerateFilepath(root, title, ext string, t time.Time) (string, error) {
@@ -168,9 +148,11 @@ func WriteFile(name string, data []byte, flag int) (err error) {
 		}
 	}()
 
-	_, errWrite := f.Write(data)
-	if errWrite != nil {
-		return errWrite
+	if len(data) > 0 {
+		_, errWrite := f.Write(data)
+		if errWrite != nil {
+			return errWrite
+		}
 	}
 	return nil
 }
