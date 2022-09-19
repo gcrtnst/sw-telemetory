@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
@@ -124,6 +125,35 @@ func TestCloseMemberCloseCatchIgnoreError(t *testing.T) {
 		t.Error()
 	}
 	if err != err_back {
+		t.Error()
+	}
+}
+
+func TestCloseOnCancelCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	c := CloseOnCancel(ctx, mock)
+	cancel()
+	<-mock.ch
+	err := c.Close()
+	if err != mock.err {
+		t.Error()
+	}
+}
+
+func TestCloseOnCancelClose(t *testing.T) {
+	ctx := context.Background()
+	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
+
+	c := CloseOnCancel(ctx, mock)
+	err := c.Close()
+	select {
+	case <-mock.ch:
+	default:
+		t.Error()
+	}
+	if err != mock.err {
 		t.Error()
 	}
 }

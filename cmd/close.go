@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 )
 
@@ -71,4 +72,33 @@ func (m *CloseMember) worker() {
 func (m *CloseMember) closeForce() {
 	m.err = m.c.Close()
 	close(m.done)
+}
+
+func CloseOnCancel(ctx context.Context, c io.Closer) io.Closer {
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(ctx)
+
+	wrap := &onCancelCloser{
+		cancel: cancel,
+		done:   make(chan struct{}),
+		err:    nil,
+	}
+	go func() {
+		<-ctx.Done()
+		wrap.err = c.Close()
+		close(wrap.done)
+	}()
+	return wrap
+}
+
+type onCancelCloser struct {
+	cancel context.CancelFunc
+	done   chan struct{}
+	err    error
+}
+
+func (c *onCancelCloser) Close() error {
+	c.cancel()
+	<-c.done
+	return c.err
 }
