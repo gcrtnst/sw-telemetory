@@ -22,7 +22,7 @@ func NewMachineConfig() *MachineConfig {
 		Root:  DefaultRoot,
 		Title: DefaultTitle,
 		Ext:   DefaultExt,
-		Log:   log.New(os.Stderr, "", log.LstdFlags),
+		Log:   log.Default(),
 	}
 }
 
