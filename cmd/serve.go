@@ -69,7 +69,7 @@ func (s *Server) ListenAndServe(port int) error {
 func (s *Server) Serve(lis net.Listener) (err error) {
 	s.cfg.Log.Printf("listening on %s://%s", lis.Addr().Network(), lis.Addr().String())
 
-	m := NewMachine(s.cfg.MachineConfig())
+	m, _ := NewMachine(s.cfg.MachineConfig())
 	rd := NewReader(lis)
 	defer s.cg.Add(rd).CloseCatch(&err)
 	sc := bufio.NewScanner(rd)

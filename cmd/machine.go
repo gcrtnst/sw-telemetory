@@ -27,7 +27,13 @@ func NewMachineConfig() *MachineConfig {
 }
 
 func (cfg *MachineConfig) Validate() error {
-	return ValidateRootTitleExt(cfg.Root, cfg.Title, cfg.Ext)
+	if err := ValidateRootTitleExt(cfg.Root, cfg.Title, cfg.Ext); err != nil {
+		return err
+	}
+	if cfg.Log == nil {
+		return errors.New("nil logger")
+	}
+	return nil
 }
 
 type Machine struct {
@@ -35,11 +41,15 @@ type Machine struct {
 	fpath string
 }
 
-func NewMachine(cfg *MachineConfig) *Machine {
-	return &Machine{
-		cfg:   cfg,
-		fpath: "",
+func NewMachine(cfg *MachineConfig) (*Machine, error) {
+	c := *cfg
+	if err := c.Validate(); err != nil {
+		return nil, err
 	}
+	return &Machine{
+		cfg:   &c,
+		fpath: "",
+	}, nil
 }
 
 func (m *Machine) Exec(cmd string, t time.Time) error {

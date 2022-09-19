@@ -56,6 +56,15 @@ func TestMachineConfigValidate(t *testing.T) {
 			},
 			wantIsErr: true,
 		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "root",
+				Title: "title",
+				Ext:   ".ext",
+				Log:   nil,
+			},
+			wantIsErr: true,
+		},
 	}
 
 	for i, c := range cases {
@@ -64,6 +73,56 @@ func TestMachineConfigValidate(t *testing.T) {
 
 		if gotIsErr != c.wantIsErr {
 			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
+		}
+	}
+}
+
+func TestNewMachine(t *testing.T) {
+	cases := []struct {
+		inCfg     *MachineConfig
+		wantIsErr bool
+	}{
+		{
+			inCfg: &MachineConfig{
+				Root:  "root",
+				Title: "title",
+				Ext:   ".ext",
+				Log:   log.Default(),
+			},
+			wantIsErr: false,
+		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "",
+				Title: "",
+				Ext:   "/",
+				Log:   nil,
+			},
+			wantIsErr: true,
+		},
+	}
+
+	for i, c := range cases {
+		gotM, gotErr := NewMachine(c.inCfg)
+		gotIsErr := gotErr != nil
+
+		if gotIsErr != c.wantIsErr {
+			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
+		}
+		if gotIsErr && gotM != nil {
+			t.Errorf("case %d: m: expected nil, got %#v", i, gotM)
+		}
+		if !gotIsErr && gotM == nil {
+			t.Errorf("case %d: m: expected non-nil, got nil", i)
+		}
+		if gotM != nil && *gotM.cfg != *c.inCfg {
+			t.Errorf("case %d: m.cfg: expected %#v, got %#v", i, c.inCfg, gotM.cfg)
+		}
+		if gotM != nil && gotM.cfg == c.inCfg {
+			t.Errorf("case %d: m.cfg: m.cfg points to the same variable as the argument", i)
+		}
+		if gotM != nil && gotM.fpath != "" {
+			t.Errorf(`case %d: m.fpath: expected "", got "%s"`, i, gotM.fpath)
 		}
 	}
 }
