@@ -591,34 +591,104 @@ func TestWriteFile(t *testing.T) {
 	tmp := filepath.Join(t.TempDir(), "tmp")
 
 	cases := []struct {
-		inName    string
-		inData    []byte
-		inFlag    int
-		wantIsErr bool
+		inName      string
+		inData      []byte
+		inTrunc     bool
+		inTmpName   string
+		inTmpData   []byte
+		wantIsErr   bool
+		wantTmpName string
+		wantTmpData []byte
 	}{
 		{
-			inName:    filepath.Join(tmp, "name"),
-			inData:    []byte("data"),
-			inFlag:    os.O_WRONLY | os.O_CREATE,
-			wantIsErr: false,
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte("data"),
+			inTrunc:     false,
+			inTmpName:   filepath.Join(tmp, "dummy"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte("data"),
 		},
 		{
-			inName:    filepath.Join(tmp, "tmp", "name"),
-			inData:    []byte("data"),
-			inFlag:    os.O_WRONLY | os.O_CREATE,
-			wantIsErr: false,
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte("data"),
+			inTrunc:     false,
+			inTmpName:   filepath.Join(tmp, "name"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte("tmpdata"),
 		},
 		{
-			inName:    filepath.Join(tmp, "tmp", "name"),
-			inData:    []byte("data"),
-			inFlag:    os.O_WRONLY,
-			wantIsErr: true,
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte("data"),
+			inTrunc:     true,
+			inTmpName:   filepath.Join(tmp, "dummy"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte("data"),
 		},
 		{
-			inName:    filepath.Join(tmp, "tmp", "name"),
-			inData:    []byte("data"),
-			inFlag:    os.O_RDONLY | os.O_CREATE,
-			wantIsErr: true,
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte("data"),
+			inTrunc:     true,
+			inTmpName:   filepath.Join(tmp, "name"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte("data"),
+		},
+		{
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte(""),
+			inTrunc:     false,
+			inTmpName:   filepath.Join(tmp, "dummy"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte(""),
+		},
+		{
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte(""),
+			inTrunc:     false,
+			inTmpName:   filepath.Join(tmp, "name"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte("tmp"),
+		},
+		{
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte(""),
+			inTrunc:     true,
+			inTmpName:   filepath.Join(tmp, "dummy"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte(""),
+		},
+		{
+			inName:      filepath.Join(tmp, "name"),
+			inData:      []byte(""),
+			inTrunc:     true,
+			inTmpName:   filepath.Join(tmp, "name"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "name"),
+			wantTmpData: []byte(""),
+		},
+		{
+			inName:      filepath.Join(tmp, "tmp", "tmp", "name"),
+			inData:      []byte("data"),
+			inTrunc:     false,
+			inTmpName:   filepath.Join(tmp, "dummy"),
+			inTmpData:   []byte("tmp"),
+			wantIsErr:   false,
+			wantTmpName: filepath.Join(tmp, "tmp", "tmp", "name"),
+			wantTmpData: []byte("data"),
 		},
 	}
 
@@ -628,22 +698,28 @@ func TestWriteFile(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		gotErr := WriteFile(c.inName, c.inData, c.inFlag)
+		err = os.MkdirAll(filepath.Dir(c.inTmpName), 0o777)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = os.WriteFile(c.inTmpName, c.inTmpData, 0o666)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		gotErr := WriteFile(c.inName, c.inData, c.inTrunc)
 		gotIsErr := gotErr != nil
 
 		if gotIsErr != c.wantIsErr {
 			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
 		}
 
-		if !gotIsErr {
-			var gotData []byte
-			gotData, err = os.ReadFile(c.inName)
-			if err != nil {
-				t.Errorf("case %d: data: %v", i, err)
-			}
-			if err == nil && !bytes.Equal(gotData, c.inData) {
-				t.Errorf(`case %d: data: expected "%s", got "%s"`, i, string(c.inData), string(gotData))
-			}
+		gotTmpData, err := os.ReadFile(c.wantTmpName)
+		if err != nil {
+			t.Errorf("case %d: data: %v", i, err)
+		}
+		if !bytes.Equal(gotTmpData, c.wantTmpData) {
+			t.Errorf(`case %d: data: expected "%s", got "%s"`, i, string(c.wantTmpData), string(gotTmpData))
 		}
 
 		err = os.RemoveAll(tmp)

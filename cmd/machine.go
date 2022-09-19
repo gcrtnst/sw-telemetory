@@ -62,20 +62,20 @@ func (m *Machine) ExecNew(title string, t time.Time) error {
 		return err
 	}
 
-	return m.internalWrite("", os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
+	return m.internalWrite("", true)
 }
 
 func (m *Machine) ExecWrite(s string, t time.Time) error {
-	flag := os.O_WRONLY | os.O_APPEND | os.O_CREATE
+	trunc := false
 	if m.fpath == "" {
-		flag = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+		trunc = true
 
 		err := m.internalNew("", t)
 		if err != nil {
 			return err
 		}
 	}
-	return m.internalWrite(s, flag)
+	return m.internalWrite(s, trunc)
 }
 
 func (m *Machine) internalNew(title string, t time.Time) error {
@@ -91,11 +91,11 @@ func (m *Machine) internalNew(title string, t time.Time) error {
 	return nil
 }
 
-func (m *Machine) internalWrite(s string, flag int) error {
+func (m *Machine) internalWrite(s string, trunc bool) error {
 	if m.fpath == "" {
 		panic("m.fpath is empty")
 	}
-	return WriteFile(m.fpath, []byte(s), flag)
+	return WriteFile(m.fpath, []byte(s), trunc)
 }
 
 func GenerateFilepath(root, title, ext string, t time.Time) (string, error) {
@@ -131,7 +131,12 @@ func IndexPathSeparator(s string) int {
 	return -1
 }
 
-func WriteFile(name string, data []byte, flag int) (err error) {
+func WriteFile(name string, data []byte, trunc bool) (err error) {
+	flag := os.O_WRONLY | os.O_APPEND | os.O_CREATE
+	if trunc {
+		flag = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
+	}
+
 	errMkdir := os.MkdirAll(filepath.Dir(name), 0o777)
 	if errMkdir != nil {
 		return errMkdir
