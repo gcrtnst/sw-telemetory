@@ -26,6 +26,10 @@ func NewMachineConfig() *MachineConfig {
 	}
 }
 
+func (cfg *MachineConfig) Validate() error {
+	return ValidateRootTitleExt(cfg.Root, cfg.Title, cfg.Ext)
+}
+
 type Machine struct {
 	cfg   *MachineConfig
 	fpath string

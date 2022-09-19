@@ -11,6 +11,63 @@ import (
 	"time"
 )
 
+func TestMachineConfigValidate(t *testing.T) {
+	cases := []struct {
+		inCfg     *MachineConfig
+		wantIsErr bool
+	}{
+		{
+			inCfg:     NewMachineConfig(),
+			wantIsErr: false,
+		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "root",
+				Title: "title",
+				Ext:   ".ext",
+				Log:   log.Default(),
+			},
+			wantIsErr: false,
+		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "",
+				Title: "title",
+				Ext:   ".ext",
+				Log:   log.Default(),
+			},
+			wantIsErr: true,
+		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "root",
+				Title: "title.",
+				Ext:   ".ext",
+				Log:   log.Default(),
+			},
+			wantIsErr: true,
+		},
+		{
+			inCfg: &MachineConfig{
+				Root:  "root",
+				Title: "title",
+				Ext:   "ext",
+				Log:   log.Default(),
+			},
+			wantIsErr: true,
+		},
+	}
+
+	for i, c := range cases {
+		gotErr := c.inCfg.Validate()
+		gotIsErr := gotErr != nil
+
+		if gotIsErr != c.wantIsErr {
+			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
+		}
+	}
+}
+
 func TestMachineExec(t *testing.T) {
 	tmp := t.TempDir()
 	root := filepath.Join(tmp, "root")
