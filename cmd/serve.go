@@ -30,12 +30,10 @@ func NewServerConfig() ServerConfig {
 
 func (cfg ServerConfig) MachineConfig() *MachineConfig {
 	return &MachineConfig{
-		Root:     cfg.Root,
-		Title:    cfg.Title,
-		Ext:      cfg.Ext,
-		DirMode:  cfg.DirMode,
-		FileMode: cfg.FileMode,
-		Log:      cfg.Log,
+		Root:  cfg.Root,
+		Title: cfg.Title,
+		Ext:   cfg.Ext,
+		Log:   cfg.Log,
 	}
 }
 

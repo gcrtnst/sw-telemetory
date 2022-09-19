@@ -11,22 +11,18 @@ import (
 )
 
 type MachineConfig struct {
-	Root     string
-	Title    string
-	Ext      string
-	DirMode  os.FileMode
-	FileMode os.FileMode
-	Log      *log.Logger
+	Root  string
+	Title string
+	Ext   string
+	Log   *log.Logger
 }
 
 func NewMachineConfig() *MachineConfig {
 	return &MachineConfig{
-		Root:     DefaultRoot,
-		Title:    DefaultTitle,
-		Ext:      DefaultExt,
-		DirMode:  DefaultDirMode,
-		FileMode: DefaultFileMode,
-		Log:      log.New(os.Stderr, "", log.LstdFlags),
+		Root:  DefaultRoot,
+		Title: DefaultTitle,
+		Ext:   DefaultExt,
+		Log:   log.New(os.Stderr, "", log.LstdFlags),
 	}
 }
 
