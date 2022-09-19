@@ -43,13 +43,6 @@ func (m *CloseMember) Close() error {
 	return m.err
 }
 
-func (m *CloseMember) CloseCatch(err *error) {
-	e := m.Close()
-	if *err == nil {
-		*err = e
-	}
-}
-
 func (m *CloseMember) init() {
 	select {
 	case <-m.greq.Wait():

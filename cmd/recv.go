@@ -40,7 +40,7 @@ func (rx *Receiver) RecvChunk() (chunk []byte, err error) {
 	if errAccept != nil {
 		return []byte{}, errAccept
 	}
-	defer rx.cg.Add(conn).CloseCatch(&err)
+	defer CloseCatch(rx.cg.Add(conn), &err)
 
 	br, ok := conn.(io.ByteReader)
 	if !ok {

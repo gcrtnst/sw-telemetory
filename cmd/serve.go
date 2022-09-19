@@ -71,7 +71,7 @@ func (s *Server) Serve(lis net.Listener) (err error) {
 
 	m, _ := NewMachine(s.cfg.MachineConfig())
 	rd := NewReader(lis)
-	defer s.cg.Add(rd).CloseCatch(&err)
+	defer CloseCatch(s.cg.Add(rd), &err)
 	sc := bufio.NewScanner(rd)
 	sc.Split(bufio.ScanLines)
 

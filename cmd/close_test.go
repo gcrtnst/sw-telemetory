@@ -95,40 +95,6 @@ func TestCloseMemberCloseMultiple(t *testing.T) {
 	}
 }
 
-func TestCloseMemberCloseCatchAssignError(t *testing.T) {
-	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
-
-	var err error
-	cg := &CloseGroup{}
-	cg.Add(mock).CloseCatch(&err)
-	select {
-	case <-mock.ch:
-	default:
-		t.Error()
-	}
-	if err != mock.err {
-		t.Error()
-	}
-}
-
-func TestCloseMemberCloseCatchIgnoreError(t *testing.T) {
-	err_back := errors.New("back")
-	err_mock := errors.New("mock")
-	mock := mockCloser{ch: make(chan struct{}), err: err_mock}
-
-	err := err_back
-	cg := &CloseGroup{}
-	cg.Add(mock).CloseCatch(&err)
-	select {
-	case <-mock.ch:
-	default:
-		t.Error()
-	}
-	if err != err_back {
-		t.Error()
-	}
-}
-
 func TestCloseOnCancelCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	mock := mockCloser{ch: make(chan struct{}), err: errors.New("")}
