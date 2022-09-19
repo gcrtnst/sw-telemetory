@@ -99,27 +99,35 @@ func (m *Machine) internalWrite(s string, trunc bool) error {
 }
 
 func GenerateFilepath(root, title, ext string, t time.Time) (string, error) {
-	if root == "" {
-		return "", errors.New("empty root")
-	}
-	if title == "" {
-		return "", errors.New("empty title")
-	}
-	if i := IndexPathSeparator(title); i >= 0 {
-		return "", fmt.Errorf("title has disallowed character '%s'", title[i:i+1])
-	}
-	if strings.ContainsRune(title, '.') {
-		return "", errors.New("title has disallowed character '.'")
-	}
-	if i := IndexPathSeparator(ext); i >= 0 {
-		return "", fmt.Errorf("file extension has disallowed character '%s'", ext[i:i+1])
-	}
-	if ext != "" && ext[0] != '.' {
-		return "", errors.New("file extension does not start with '.'")
+	err := ValidateRootTitleExt(root, title, ext)
+	if err != nil {
+		return "", err
 	}
 
 	fpath := filepath.Join(root, title, title+"-"+t.Format("20060102150405")+ext)
 	return fpath, nil
+}
+
+func ValidateRootTitleExt(root, title, ext string) error {
+	if root == "" {
+		return errors.New("empty root")
+	}
+	if title == "" {
+		return errors.New("empty title")
+	}
+	if i := IndexPathSeparator(title); i >= 0 {
+		return fmt.Errorf("title has disallowed character '%s'", title[i:i+1])
+	}
+	if strings.ContainsRune(title, '.') {
+		return errors.New("title has disallowed character '.'")
+	}
+	if i := IndexPathSeparator(ext); i >= 0 {
+		return fmt.Errorf("file extension has disallowed character '%s'", ext[i:i+1])
+	}
+	if ext != "" && ext[0] != '.' {
+		return errors.New("file extension does not start with '.'")
+	}
+	return nil
 }
 
 func IndexPathSeparator(s string) int {

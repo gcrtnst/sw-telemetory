@@ -589,65 +589,9 @@ func TestGenerateFilepath(t *testing.T) {
 			wantIsErr: false,
 		},
 		{
-			inRoot:    "root",
-			inTitle:   "title",
-			inExt:     "",
-			inT:       testT,
-			wantFpath: strings.ReplaceAll("root/title/title-20060102150405", "/", testSep),
-			wantIsErr: false,
-		},
-		{
 			inRoot:    "",
 			inTitle:   "title",
 			inExt:     ".ext",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "",
-			inExt:     ".ext",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "/title",
-			inExt:     ".ext",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "title.ext",
-			inExt:     ".ext",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "title",
-			inExt:     "/ext",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "title",
-			inExt:     "ext/",
-			inT:       testT,
-			wantFpath: "",
-			wantIsErr: true,
-		},
-		{
-			inRoot:    "root",
-			inTitle:   "title",
-			inExt:     "ext",
 			inT:       testT,
 			wantFpath: "",
 			wantIsErr: true,
@@ -661,6 +605,81 @@ func TestGenerateFilepath(t *testing.T) {
 		if gotFpath != c.wantFpath {
 			t.Errorf(`case %d: fpath: expected "%s", got "%s"`, i, c.wantFpath, gotFpath)
 		}
+		if gotIsErr != c.wantIsErr {
+			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
+		}
+	}
+}
+
+func TestValidateRootTitleExt(t *testing.T) {
+	sep := string(os.PathSeparator)
+
+	cases := []struct {
+		inRoot    string
+		inTitle   string
+		inExt     string
+		wantIsErr bool
+	}{
+		{
+			inRoot:    "root",
+			inTitle:   "title",
+			inExt:     ".ext",
+			wantIsErr: false,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "title",
+			inExt:     "",
+			wantIsErr: false,
+		},
+		{
+			inRoot:    "",
+			inTitle:   "title",
+			inExt:     ".ext",
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "",
+			inExt:     ".ext",
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   sep + "title",
+			inExt:     ".ext",
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "title.ext",
+			inExt:     ".ext",
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "title",
+			inExt:     sep + "ext",
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "title",
+			inExt:     "ext" + sep,
+			wantIsErr: true,
+		},
+		{
+			inRoot:    "root",
+			inTitle:   "title",
+			inExt:     "ext",
+			wantIsErr: true,
+		},
+	}
+
+	for i, c := range cases {
+		gotErr := ValidateRootTitleExt(c.inRoot, c.inTitle, c.inExt)
+		gotIsErr := gotErr != nil
+
 		if gotIsErr != c.wantIsErr {
 			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
 		}
