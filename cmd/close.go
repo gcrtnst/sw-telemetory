@@ -102,3 +102,9 @@ func CloseCatch(c io.Closer, err *error) {
 		*err = e
 	}
 }
+
+func CatchContextError(ctx context.Context, err *error) {
+	if e := ctx.Err(); e != nil {
+		*err = e
+	}
+}

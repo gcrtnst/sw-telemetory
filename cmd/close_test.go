@@ -148,6 +148,49 @@ func TestCloseCatchIgnoreError(t *testing.T) {
 	}
 }
 
+func TestCatchContextError(t *testing.T) {
+	open_ctx := context.Background()
+	done_ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	test_err := errors.New("")
+
+	cases := []struct {
+		inCtx   context.Context
+		inErr   error
+		wantErr error
+	}{
+		{
+			inCtx:   open_ctx,
+			inErr:   nil,
+			wantErr: nil,
+		},
+		{
+			inCtx:   open_ctx,
+			inErr:   test_err,
+			wantErr: test_err,
+		},
+		{
+			inCtx:   done_ctx,
+			inErr:   nil,
+			wantErr: context.Canceled,
+		},
+		{
+			inCtx:   done_ctx,
+			inErr:   test_err,
+			wantErr: context.Canceled,
+		},
+	}
+
+	for i, c := range cases {
+		gotErr := c.inErr
+		CatchContextError(c.inCtx, &gotErr)
+
+		if gotErr != c.wantErr {
+			t.Errorf(`case %d: err: expected "%s", got "%s"`, i, c.wantErr, gotErr)
+		}
+	}
+}
+
 type mockCloser struct {
 	ch  chan struct{}
 	err error
