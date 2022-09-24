@@ -43,15 +43,3 @@ func TestTimeServiceServe(t *testing.T) {
 		}
 	}
 }
-
-func TestTimeServiceServePanic(t *testing.T) {
-	defer func() {
-		r := recover()
-		if r == nil {
-			t.Error()
-		}
-	}()
-
-	s := &TimeService{Now: time.Now}
-	s.Serve(nil)
-}

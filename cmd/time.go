@@ -10,9 +10,6 @@ type TimeService struct {
 }
 
 func (s *TimeService) Serve(req []byte) ([]byte, error) {
-	if req == nil {
-		panic("req is nil")
-	}
 	if len(req) > 0 {
 		return nil, errors.New("extra request data")
 	}
