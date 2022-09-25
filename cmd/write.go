@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/fs"
+	"path/filepath"
 	"runtime"
 	"strings"
 )
@@ -30,4 +32,13 @@ func ParseWriteRequest(req []byte) (*WriteRequest, error) {
 
 func ValidPath(path string) bool {
 	return fs.ValidPath(path) && !(runtime.GOOS == "windows" && strings.ContainsAny(path, `:\`))
+}
+
+func GenerateFilepath(root, path string) (string, error) {
+	if !ValidPath(path) {
+		return "", fmt.Errorf(`invalid path: "%s"`, path)
+	}
+
+	path = filepath.FromSlash(path)
+	return filepath.Join(root, path), nil
 }

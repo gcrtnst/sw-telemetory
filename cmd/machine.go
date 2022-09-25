@@ -92,7 +92,7 @@ func (m *Machine) internalNew(title string, t time.Time) error {
 	if title == "" {
 		title = m.cfg.Title
 	}
-	fpath, err := GenerateFilepath(m.cfg.Root, title, m.cfg.Ext, t)
+	fpath, err := GenerateFilepathOld(m.cfg.Root, title, m.cfg.Ext, t)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (m *Machine) internalWrite(s string, trunc bool) error {
 	return WriteFile(m.fpath, []byte(s), trunc)
 }
 
-func GenerateFilepath(root, title, ext string, t time.Time) (string, error) {
+func GenerateFilepathOld(root, title, ext string, t time.Time) (string, error) {
 	err := ValidateRootTitleExt(root, title, ext)
 	if err != nil {
 		return "", err

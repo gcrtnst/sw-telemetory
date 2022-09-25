@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -119,6 +121,40 @@ func testValidPath(t *testing.T, cases []validPathTestCase) {
 		gotOK := ValidPath(c.inPath)
 		if gotOK != c.wantOK {
 			t.Errorf("case %d: expected %t, got %t", i, c.wantOK, gotOK)
+		}
+	}
+}
+
+func TestGenerateFilepath(t *testing.T) {
+	cases := []struct {
+		inRoot    string
+		inPath    string
+		wantFpath string
+		wantIsErr bool
+	}{
+		{
+			inRoot:    "root",
+			inPath:    "path/to/file",
+			wantFpath: strings.ReplaceAll("root/path/to/file", "/", string(os.PathSeparator)),
+			wantIsErr: false,
+		},
+		{
+			inRoot:    "root",
+			inPath:    "",
+			wantFpath: "",
+			wantIsErr: true,
+		},
+	}
+
+	for i, c := range cases {
+		gotFpath, gotErr := GenerateFilepath(c.inRoot, c.inPath)
+		gotIsErr := gotErr != nil
+
+		if gotFpath != c.wantFpath {
+			t.Errorf(`case %d: fpath: expected "%s", got "%s"`, i, c.wantFpath, gotFpath)
+		}
+		if gotIsErr != c.wantIsErr {
+			t.Errorf("case %d: err: expected %t, got %t", i, c.wantIsErr, gotIsErr)
 		}
 	}
 }

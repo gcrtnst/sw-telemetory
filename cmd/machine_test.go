@@ -684,7 +684,7 @@ func TestMachineExecWrite(t *testing.T) {
 	}
 }
 
-func TestGenerateFilepath(t *testing.T) {
+func TestGenerateFilepathOld(t *testing.T) {
 	testSep := string(os.PathSeparator)
 	testT := time.Date(2006, time.January, 2, 15, 4, 5, 999999999, time.FixedZone("UTC-7", -7*60*60))
 
@@ -715,7 +715,7 @@ func TestGenerateFilepath(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		gotFpath, gotErr := GenerateFilepath(c.inRoot, c.inTitle, c.inExt, c.inT)
+		gotFpath, gotErr := GenerateFilepathOld(c.inRoot, c.inTitle, c.inExt, c.inT)
 		gotIsErr := gotErr != nil
 
 		if gotFpath != c.wantFpath {
