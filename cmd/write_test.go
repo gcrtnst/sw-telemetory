@@ -11,10 +11,9 @@ import (
 
 func TestParseWriteRequestNormal(t *testing.T) {
 	cases := []struct {
-		inReq     []byte
-		wantPath  string
-		wantData  []byte
-		wantIsErr bool
+		inReq    []byte
+		wantPath string
+		wantData []byte
 	}{
 		{
 			inReq:    []byte("\x00"),
@@ -57,6 +56,19 @@ func TestParseWriteRequestNormal(t *testing.T) {
 		}
 		if gotReq != nil && (((gotReq.Data == nil) != (c.wantData == nil)) || (!bytes.Equal(gotReq.Data, c.wantData))) {
 			t.Errorf("case %d: req.Data: expected %#v, got %#v", i, c.wantData, gotReq.Data)
+		}
+	}
+}
+
+func TestParseWriteRequestError(t *testing.T) {
+	cases := [][]byte{nil, {}, []byte("data")}
+	for i, c := range cases {
+		gotReq, gotErr := ParseWriteRequest(c)
+		if gotReq != nil {
+			t.Errorf("case %d: req: expected nil, got %#v", i, gotReq)
+		}
+		if gotErr == nil {
+			t.Errorf("case %d: err: expected non-nil, got nil", i)
 		}
 	}
 }
