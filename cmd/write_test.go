@@ -9,6 +9,107 @@ import (
 	"testing"
 )
 
+func TestWriteServiceServeNormal(t *testing.T) {
+	tmp := t.TempDir()
+	root := filepath.Join(tmp, "root")
+
+	cases := []struct {
+		inReq       []byte
+		inTmpName   string
+		inTmpData   []byte
+		wantTmpName string
+		wantTmpData []byte
+	}{
+		{
+			inReq:       []byte("path/to/file\x00data"),
+			inTmpName:   filepath.Join(root, "dummy"),
+			inTmpData:   []byte{},
+			wantTmpName: filepath.Join(root, "path", "to", "file"),
+			wantTmpData: []byte("data"),
+		},
+		{
+			inReq:       []byte("path/to/file\x00def"),
+			inTmpName:   filepath.Join(root, "path", "to", "file"),
+			inTmpData:   []byte("abc"),
+			wantTmpName: filepath.Join(root, "path", "to", "file"),
+			wantTmpData: []byte("abcdef"),
+		},
+	}
+
+	for i, c := range cases {
+		err := os.Mkdir(root, 0o777)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = os.MkdirAll(filepath.Dir(c.inTmpName), 0o777)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = os.WriteFile(c.inTmpName, c.inTmpData, 0o666)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		inS := &WriteService{Root: root}
+		gotResp, gotErr := inS.Serve(c.inReq)
+		if gotErr != nil {
+			t.Errorf("case %d: err: %v", i, gotErr)
+		}
+		if gotResp == nil || len(gotResp) > 0 {
+			t.Errorf("case %d: req: expected %#v, got %#v", i, []byte{}, gotResp)
+		}
+
+		gotTmpData, err := os.ReadFile(c.wantTmpName)
+		if err != nil {
+			t.Errorf("case %d: file open: %v", i, err)
+		}
+		if !bytes.Equal(gotTmpData, c.wantTmpData) {
+			t.Errorf("case %d: file data: expected %#v, got %#v", i, c.wantTmpData, gotTmpData)
+		}
+
+		err = os.RemoveAll(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestWriteServiceServeError(t *testing.T) {
+	tmp := t.TempDir()
+	root := filepath.Join(tmp, "root")
+
+	cases := [][]byte{nil, []byte("/\x00"), []byte(".\x00")}
+	for i, c := range cases {
+		err := os.Mkdir(root, 0o777)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		inS := &WriteService{Root: root}
+		gotResp, gotErr := inS.Serve(c)
+		if gotResp != nil {
+			t.Errorf("case %d: resp: expected nil, got %#v", i, gotResp)
+		}
+		if gotErr == nil {
+			t.Errorf("case %d: err: expected non-nil, got nil", i)
+		}
+
+		gotDirList, err := os.ReadDir(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(gotDirList) > 0 {
+			t.Errorf("case %d: file exists", i)
+		}
+
+		err = os.RemoveAll(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestParseWriteRequestNormal(t *testing.T) {
 	cases := []struct {
 		inReq    []byte

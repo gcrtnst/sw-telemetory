@@ -11,6 +11,29 @@ import (
 	"strings"
 )
 
+type WriteService struct {
+	Root string
+}
+
+func (s *WriteService) Serve(req []byte) ([]byte, error) {
+	p, err := ParseWriteRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	fpath, err := GenerateFilepath(s.Root, p.Path)
+	if err != nil {
+		return nil, err
+	}
+
+	err = WriteFile(fpath, p.Data, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte{}, nil
+}
+
 type WriteRequest struct {
 	Path string
 	Data []byte
