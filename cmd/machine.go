@@ -148,34 +148,3 @@ func IndexPathSeparator(s string) int {
 	}
 	return -1
 }
-
-func WriteFile(name string, data []byte, trunc bool) (err error) {
-	flag := os.O_WRONLY | os.O_APPEND | os.O_CREATE
-	if trunc {
-		flag = os.O_WRONLY | os.O_CREATE | os.O_TRUNC
-	}
-
-	errMkdir := os.MkdirAll(filepath.Dir(name), 0o777)
-	if errMkdir != nil {
-		return errMkdir
-	}
-
-	f, errOpen := os.OpenFile(name, flag, 0o666)
-	if errOpen != nil {
-		return errOpen
-	}
-	defer func() {
-		errClose := f.Close()
-		if err == nil {
-			err = errClose
-		}
-	}()
-
-	if len(data) > 0 {
-		_, errWrite := f.Write(data)
-		if errWrite != nil {
-			return errWrite
-		}
-	}
-	return nil
-}
