@@ -15,6 +15,12 @@ func TestTimeServiceServe(t *testing.T) {
 	}{
 		{
 			inNow:     time.Date(2006, time.January, 2, 15, 4, 5, 999999999, time.FixedZone("UTC-7", -7*60*60)),
+			inReq:     nil,
+			wantResp:  []byte("20060102150405"),
+			wantIsErr: false,
+		},
+		{
+			inNow:     time.Date(2006, time.January, 2, 15, 4, 5, 999999999, time.FixedZone("UTC-7", -7*60*60)),
 			inReq:     []byte{},
 			wantResp:  []byte("20060102150405"),
 			wantIsErr: false,
