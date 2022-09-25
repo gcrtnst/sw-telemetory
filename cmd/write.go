@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
+	"io/fs"
+	"runtime"
+	"strings"
 )
 
 type WriteRequest struct {
@@ -23,4 +26,8 @@ func ParseWriteRequest(req []byte) (*WriteRequest, error) {
 		Path: string(req[:i]),
 		Data: dst_data,
 	}, nil
+}
+
+func ValidPath(path string) bool {
+	return fs.ValidPath(path) && !(runtime.GOOS == "windows" && strings.ContainsAny(path, `:\`))
 }
