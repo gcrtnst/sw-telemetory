@@ -1,6 +1,7 @@
 function test()
     local test_tbl = {
         {"testEscapeQuery", testEscapeQuery},
+        {"testEncodeCSVRecord", testEncodeCSVRecord},
         {"testEscapeCSVField", testEscapeCSVField},
     }
 
@@ -34,6 +35,38 @@ function testEscapeQuery(t)
         t.fn()
 
         local got_s = t.env.escapeQuery(in_s)
+        if got_s ~= want_s then
+            error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
+        end
+    end
+end
+
+function testEncodeCSVRecord(t)
+    local tests = {
+        {{}, "\r\n"},
+        {{""}, "\r\n"},
+        {{"", ""}, ",\r\n"},
+        {{"", "", ""}, ",,\r\n"},
+        {{"a"}, "a\r\n"},
+        {{"a", "a"}, "a,a\r\n"},
+        {{"a", "a", "a"}, "a,a,a\r\n"},
+        {{"", "", "a"}, ",,a\r\n"},
+        {{"", "a", ""}, ",a,\r\n"},
+        {{"", "a", "a"}, ",a,a\r\n"},
+        {{"a", "", ""}, "a,,\r\n"},
+        {{"a", "", "a"}, "a,,a\r\n"},
+        {{"a", "a", ""}, "a,a,\r\n"},
+        {{"a", "a", "a"}, "a,a,a\r\n"},
+        {{"abc", "def", "ghi"}, "abc,def,ghi\r\n"},
+        {{",", ",", ","}, '",",",",","\r\n'},
+    }
+
+    for i, tt in ipairs(tests) do
+        local in_record, want_s = table.unpack(tt)
+        t:reset()
+        t.fn()
+
+        local got_s = t.env.encodeCSVRecord(in_record)
         if got_s ~= want_s then
             error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
         end
