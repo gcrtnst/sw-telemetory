@@ -2,7 +2,7 @@ function test()
     local test_tbl = {
         {"testEscapeQuery", testEscapeQuery},
         {"testEncodeCSVRecord", testEncodeCSVRecord},
-        {"testEscapeCSVField", testEscapeCSVField},
+        {"testEncodeCSVField", testEncodeCSVField},
     }
 
     local t = buildT()
@@ -73,7 +73,7 @@ function testEncodeCSVRecord(t)
     end
 end
 
-function testEscapeCSVField(t)
+function testEncodeCSVField(t)
     local tests = {
         {'', ''},
         {'a', 'a'},
@@ -99,7 +99,7 @@ function testEscapeCSVField(t)
         t:reset()
         t.fn()
 
-        local got_s = t.env.escapeCSVField(in_s)
+        local got_s = t.env.encodeCSVField(in_s)
         if got_s ~= want_s then
             error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
         end

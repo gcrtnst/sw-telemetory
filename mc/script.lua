@@ -29,12 +29,12 @@ function encodeCSVRecord(record)
     -- RFC 4180
     local out = {}
     for i, s in ipairs(record) do
-        out[i] = escapeCSVField(s)
+        out[i] = encodeCSVField(s)
     end
     return table.concat(out, ",") .. "\r\n"
 end
 
-function escapeCSVField(s)
+function encodeCSVField(s)
     -- RFC 4180
     if string.match(s, "\r\n") ~= nil or string.match(s, '[",]') ~= nil then
         s = string.gsub(s, '"', '""')
