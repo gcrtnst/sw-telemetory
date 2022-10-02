@@ -24,3 +24,12 @@ function escapeQuery(s)
     end
     return table.concat(out)
 end
+
+function escapeCSVField(s)
+    -- RFC 4180
+    if string.match(s, "\r\n") ~= nil or string.match(s, '[",]') ~= nil then
+        s = string.gsub(s, '"', '""')
+        s = '"' .. s .. '"'
+    end
+    return s
+end

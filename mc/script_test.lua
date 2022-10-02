@@ -1,6 +1,7 @@
 function test()
     local test_tbl = {
         {"testEscapeQuery", testEscapeQuery},
+        {"testEscapeCSVField", testEscapeCSVField},
     }
 
     local t = buildT()
@@ -33,6 +34,39 @@ function testEscapeQuery(t)
         t.fn()
 
         local got_s = t.env.escapeQuery(in_s)
+        if got_s ~= want_s then
+            error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
+        end
+    end
+end
+
+function testEscapeCSVField(t)
+    local tests = {
+        {'', ''},
+        {'a', 'a'},
+        {' ', ' '},
+        {'\r', '\r'},
+        {'\n', '\n'},
+        {'\r\n', '"\r\n"'},
+        {'"', '""""'},
+        {',', '","'},
+        {'abc', 'abc'},
+        {'"abc"', '"""abc"""'},
+        {'a"b', '"a""b"'},
+        {'"a"b"', '"""a""b"""'},
+        {' abc', ' abc'},
+        {'abc,def', '"abc,def"'},
+        {'abc\ndef', 'abc\ndef'},
+        {'abc\rdef', 'abc\rdef'},
+        {'abc\r\ndef', '"abc\r\ndef"'},
+    }
+
+    for i, tt in ipairs(tests) do
+        local in_s, want_s = table.unpack(tt)
+        t:reset()
+        t.fn()
+
+        local got_s = t.env.escapeCSVField(in_s)
         if got_s ~= want_s then
             error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
         end
