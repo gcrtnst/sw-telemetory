@@ -36,7 +36,7 @@ end
 
 function encodeCSVField(s)
     -- RFC 4180
-    if string.match(s, "\r\n") ~= nil or string.match(s, '[",]') ~= nil then
+    if string.match(s, '[\r\n",]') ~= nil then
         s = string.gsub(s, '"', '""')
         s = '"' .. s .. '"'
     end
