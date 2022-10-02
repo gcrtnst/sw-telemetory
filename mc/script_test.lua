@@ -78,8 +78,8 @@ function testEncodeCSVField(t)
         {'', ''},
         {'a', 'a'},
         {' ', ' '},
-        {'\r', '"\r"'},
-        {'\n', '"\n"'},
+        {'\r', '\r'},
+        {'\n', '\n'},
         {'\r\n', '"\r\n"'},
         {'"', '""""'},
         {',', '","'},
@@ -89,8 +89,8 @@ function testEncodeCSVField(t)
         {'"a"b"', '"""a""b"""'},
         {' abc', ' abc'},
         {'abc,def', '"abc,def"'},
-        {'abc\ndef', '"abc\ndef"'},
-        {'abc\rdef', '"abc\rdef"'},
+        {'abc\ndef', 'abc\ndef'},
+        {'abc\rdef', 'abc\rdef'},
         {'abc\r\ndef', '"abc\r\ndef"'},
     }
 
