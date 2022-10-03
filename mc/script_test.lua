@@ -22,6 +22,8 @@ end
 
 function testEncodeCSVRecord(t)
     local tests = {
+        {nil, nil},
+        {{0}, nil},
         {{}, "\r\n"},
         {{""}, "\r\n"},
         {{"", ""}, ",\r\n"},
@@ -54,6 +56,7 @@ end
 
 function testEncodeCSVField(t)
     local tests = {
+        {nil, nil},
         {'', ''},
         {'a', 'a'},
         {' ', ' '},
@@ -87,6 +90,7 @@ end
 
 function testEscapeQuery(t)
     local tests = {
+        {nil, nil},
         {"", ""},
         {"abc", "abc"},
         {"one two", "one+two"},
