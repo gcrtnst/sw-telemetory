@@ -1,8 +1,8 @@
 function test()
     local test_tbl = {
-        {"testEscapeQuery", testEscapeQuery},
         {"testEncodeCSVRecord", testEncodeCSVRecord},
         {"testEncodeCSVField", testEncodeCSVField},
+        {"testEscapeQuery", testEscapeQuery},
     }
 
     local t = buildT()
@@ -16,27 +16,6 @@ function test()
             io.write(string.format("     %s\n", err))
         else
             io.write(string.format("PASS %s\n", test_name))
-        end
-    end
-end
-
-function testEscapeQuery(t)
-    local tests = {
-        {"", ""},
-        {"abc", "abc"},
-        {"one two", "one+two"},
-        {"10%", "10%25"},
-        {" ?&=#+%!<>#\"{}|\\^[]`☺\t:/@$'()*,;", "+%3F%26%3D%23%2B%25%21%3C%3E%23%22%7B%7D%7C%5C%5E%5B%5D%60%E2%98%BA%09%3A%2F%40%24%27%28%29%2A%2C%3B"},
-    }
-
-    for i, tt in ipairs(tests) do
-        local in_s, want_s = table.unpack(tt)
-        t:reset()
-        t.fn()
-
-        local got_s = t.env.escapeQuery(in_s)
-        if got_s ~= want_s then
-            error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
         end
     end
 end
@@ -100,6 +79,27 @@ function testEncodeCSVField(t)
         t.fn()
 
         local got_s = t.env.encodeCSVField(in_s)
+        if got_s ~= want_s then
+            error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
+        end
+    end
+end
+
+function testEscapeQuery(t)
+    local tests = {
+        {"", ""},
+        {"abc", "abc"},
+        {"one two", "one+two"},
+        {"10%", "10%25"},
+        {" ?&=#+%!<>#\"{}|\\^[]`☺\t:/@$'()*,;", "+%3F%26%3D%23%2B%25%21%3C%3E%23%22%7B%7D%7C%5C%5E%5B%5D%60%E2%98%BA%09%3A%2F%40%24%27%28%29%2A%2C%3B"},
+    }
+
+    for i, tt in ipairs(tests) do
+        local in_s, want_s = table.unpack(tt)
+        t:reset()
+        t.fn()
+
+        local got_s = t.env.escapeQuery(in_s)
         if got_s ~= want_s then
             error(string.format('case %d: expected "%s", got "%s"', i, want_s, got_s))
         end

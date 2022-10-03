@@ -1,3 +1,21 @@
+function encodeCSVRecord(record)
+    -- RFC 4180
+    local out = {}
+    for i, s in ipairs(record) do
+        out[i] = encodeCSVField(s)
+    end
+    return table.concat(out, ",") .. "\r\n"
+end
+
+function encodeCSVField(s)
+    -- RFC 4180
+    if string.match(s, "\r\n") ~= nil or string.match(s, '[",]') ~= nil then
+        s = string.gsub(s, '"', '""')
+        s = '"' .. s .. '"'
+    end
+    return s
+end
+
 function escapeQuery(s)
     s = tostring(s)
 
@@ -23,22 +41,4 @@ function escapeQuery(s)
         table.insert(out, o)
     end
     return table.concat(out)
-end
-
-function encodeCSVRecord(record)
-    -- RFC 4180
-    local out = {}
-    for i, s in ipairs(record) do
-        out[i] = encodeCSVField(s)
-    end
-    return table.concat(out, ",") .. "\r\n"
-end
-
-function encodeCSVField(s)
-    -- RFC 4180
-    if string.match(s, "\r\n") ~= nil or string.match(s, '[",]') ~= nil then
-        s = string.gsub(s, '"', '""')
-        s = '"' .. s .. '"'
-    end
-    return s
 end
