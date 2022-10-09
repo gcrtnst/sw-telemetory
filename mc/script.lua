@@ -63,6 +63,10 @@ function clientHttpGet(ctx, port, req, callback)
 end
 
 function clientHttpCancel()
+    if g_client_timeout == nil then
+        return
+    end
+
     local ctx = g_client_ctx
     local callback = g_client_callback
     g_client_ctx = nil
