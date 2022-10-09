@@ -1,26 +1,13 @@
+g_test_tbl = {}
+
 function test()
-    local test_tbl = {
-        {"testClientSizeNormal", testClientSizeNormal},
-        {"testClientSizeError", testClientSizeError},
-        {"testClientBusyAfterInit", testClientBusyAfterInit},
-        {"testClientBusyAfterGet", testClientBusyAfterGet},
-        {"testClientBusyAfterCancel", testClientBusyAfterCancel},
-        {"testClientBusyAfterTimeout", testClientBusyAfterTimeout},
-        {"testClientBusyAfterReply", testClientBusyAfterReply},
-        {"testClientBusyAfterCancelTimeout", testClientBusyAfterCancelTimeout},
-        {"testClientBusyAfterCancelReply", testClientBusyAfterCancelReply},
-        {"testClientCancel", testClientCancel},
-        {"testClientCancelNothing", testClientCancelNothing},
-        {"testClientCancelCancel", testClientCancelCancel},
-        {"testClientCancelTimeout", testClientCancelTimeout},
-        {"testClientCancelReply", testClientCancelReply},
-        {"testClientTimeoutBefore", testClientTimeoutBefore},
-        {"testClientTimeoutAfter", testClientTimeoutAfter},
-        {"testClientTimeoutGet", testClientTimeoutGet},
-        {"testEncodeCSVRecord", testEncodeCSVRecord},
-        {"testEncodeCSVField", testEncodeCSVField},
-        {"testEscapeQuery", testEscapeQuery},
-    }
+    local test_tbl = {}
+    for test_name, test_fn in pairs(g_test_tbl) do
+        table.insert(test_tbl, {test_name, test_fn})
+    end
+    table.sort(test_tbl, function(x, y)
+        return x[1] < y[1]
+    end)
 
     local t = buildT()
     for _, test_entry in ipairs(test_tbl) do
@@ -37,7 +24,7 @@ function test()
     end
 end
 
-function testClientSizeNormal(t)
+function g_test_tbl.testClientSizeNormal(t)
     t:reset()
     t.fn()
 
@@ -49,7 +36,7 @@ function testClientSizeNormal(t)
     t.env.async._assert_call(1, 52149, "/ur")
 end
 
-function testClientSizeError(t)
+function g_test_tbl.testClientSizeError(t)
     t:reset()
     t.fn()
 
@@ -61,7 +48,7 @@ function testClientSizeError(t)
     t.env.async._assert_cnt(0)
 end
 
-function testClientBusyAfterInit(t)
+function g_test_tbl.testClientBusyAfterInit(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -71,7 +58,7 @@ function testClientBusyAfterInit(t)
     t.env.async._assert_call(1, 52149, "/url")
 end
 
-function testClientBusyAfterGet(t)
+function g_test_tbl.testClientBusyAfterGet(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -83,7 +70,7 @@ function testClientBusyAfterGet(t)
     t.env.async._assert_cnt(1)
 end
 
-function testClientBusyAfterCancel(t)
+function g_test_tbl.testClientBusyAfterCancel(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -96,7 +83,7 @@ function testClientBusyAfterCancel(t)
     t.env.async._assert_cnt(1)
 end
 
-function testClientBusyAfterTimeout(t)
+function g_test_tbl.testClientBusyAfterTimeout(t)
     t:reset()
     t.fn()
 
@@ -111,7 +98,7 @@ function testClientBusyAfterTimeout(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientBusyAfterReply(t)
+function g_test_tbl.testClientBusyAfterReply(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -124,7 +111,7 @@ function testClientBusyAfterReply(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientBusyAfterCancelTimeout(t)
+function g_test_tbl.testClientBusyAfterCancelTimeout(t)
     t:reset()
     t.fn()
 
@@ -140,7 +127,7 @@ function testClientBusyAfterCancelTimeout(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientBusyAfterCancelReply(t)
+function g_test_tbl.testClientBusyAfterCancelReply(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -154,7 +141,7 @@ function testClientBusyAfterCancelReply(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientCancel(t)
+function g_test_tbl.testClientCancel(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -164,13 +151,13 @@ function testClientCancel(t)
     callback.assert_call("ctx", t.env.c_client_status_cancel, nil)
 end
 
-function testClientCancelNothing(t)
+function g_test_tbl.testClientCancelNothing(t)
     t:reset()
     t.fn()
     t.env.clientHttpCancel()
 end
 
-function testClientCancelCancel(t)
+function g_test_tbl.testClientCancelCancel(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -181,7 +168,7 @@ function testClientCancelCancel(t)
     callback.assert_call("ctx", t.env.c_client_status_cancel, nil)
 end
 
-function testClientCancelTimeout(t)
+function g_test_tbl.testClientCancelTimeout(t)
     t:reset()
     t.fn()
 
@@ -198,7 +185,7 @@ function testClientCancelTimeout(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientCancelReply(t)
+function g_test_tbl.testClientCancelReply(t)
     t:reset()
     t.fn()
     local callback = buildMockClientCallback()
@@ -213,7 +200,7 @@ function testClientCancelReply(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientTimeoutBefore(t)
+function g_test_tbl.testClientTimeoutBefore(t)
     t:reset()
     t.fn()
 
@@ -230,7 +217,7 @@ function testClientTimeoutBefore(t)
     t.env.async._assert_cnt(1)
 end
 
-function testClientTimeoutAfter(t)
+function g_test_tbl.testClientTimeoutAfter(t)
     t:reset()
     t.fn()
 
@@ -248,7 +235,7 @@ function testClientTimeoutAfter(t)
     t.env.async._assert_call(2, 52149, "/url")
 end
 
-function testClientTimeoutGet(t)
+function g_test_tbl.testClientTimeoutGet(t)
     t:reset()
     t.fn()
 
@@ -270,7 +257,7 @@ function testClientTimeoutGet(t)
     end
 end
 
-function testEncodeCSVRecord(t)
+function g_test_tbl.testEncodeCSVRecord(t)
     local tests = {
         {nil, nil},
         {{0}, nil},
@@ -304,7 +291,7 @@ function testEncodeCSVRecord(t)
     end
 end
 
-function testEncodeCSVField(t)
+function g_test_tbl.testEncodeCSVField(t)
     local tests = {
         {nil, nil},
         {'', ''},
@@ -338,7 +325,7 @@ function testEncodeCSVField(t)
     end
 end
 
-function testEscapeQuery(t)
+function g_test_tbl.testEscapeQuery(t)
     local tests = {
         {nil, nil},
         {"", ""},
