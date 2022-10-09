@@ -9,6 +9,13 @@ end
 function clientInit()
     c_client_maxlen = 3840
     c_client_timeout = 600
+
+    c_client_status_ok = 0
+    c_client_status_size = 1
+    c_client_status_busy = 2
+    c_client_status_cancel = 3
+    c_client_status_timeout = 4
+
     clientInitVar()
 end
 
@@ -24,7 +31,7 @@ function clientOnTick()
     if g_client_timeout ~= nil then
         g_client_timeout = g_client_timeout - 1
         if g_client_timeout <= 0 then
-            clientHttpFinish(nil)
+            clientHttpFinish(c_client_status_timeout, nil)
             return
         end
     end
@@ -34,12 +41,17 @@ function clientHttpReply(port, req, resp)
     if g_client_timeout == nil or g_client_port ~= port or g_client_req ~= req then
         return
     end
-    clientHttpFinish(resp)
+    clientHttpFinish(c_client_status_ok, resp)
 end
 
 function clientHttpGet(ctx, port, req, callback)
-    if #req > c_client_maxlen or g_client_timeout ~= nil then
-        return false
+    if #req > c_client_maxlen then
+        callback(ctx, c_client_status_size, nil)
+        return
+    end
+    if g_client_timeout ~= nil then
+        callback(ctx, c_client_status_busy, nil)
+        return
     end
 
     g_client_timeout = c_client_timeout
@@ -48,7 +60,6 @@ function clientHttpGet(ctx, port, req, callback)
     g_client_req = req
     g_client_callback = callback
     async.httpGet(port, req)
-    return true
 end
 
 function clientHttpCancel()
@@ -57,15 +68,15 @@ function clientHttpCancel()
     g_client_ctx = nil
     g_client_callback = function() end
 
-    callback(ctx, nil)
+    callback(ctx, c_client_status_cancel, nil)
 end
 
-function clientHttpFinish(resp)
+function clientHttpFinish(status, resp)
     local ctx = g_client_ctx
     local callback = g_client_callback
     clientInitVar()
 
-    callback(ctx, resp)
+    callback(ctx, status, resp)
 end
 
 function encodeCSVRecord(record)

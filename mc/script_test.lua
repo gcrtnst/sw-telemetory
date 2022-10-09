@@ -1,5 +1,14 @@
 function test()
     local test_tbl = {
+        {"testClientSizeNormal", testClientSizeNormal},
+        {"testClientSizeError", testClientSizeError},
+        {"testClientBusyAfterInit", testClientBusyAfterInit},
+        {"testClientBusyAfterGet", testClientBusyAfterGet},
+        {"testClientBusyAfterCancel", testClientBusyAfterCancel},
+        {"testClientBusyAfterTimeout", testClientBusyAfterTimeout},
+        {"testClientBusyAfterReply", testClientBusyAfterReply},
+        {"testClientBusyAfterCancelTimeout", testClientBusyAfterCancelTimeout},
+        {"testClientBusyAfterCancelReply", testClientBusyAfterCancelReply},
         {"testEncodeCSVRecord", testEncodeCSVRecord},
         {"testEncodeCSVField", testEncodeCSVField},
         {"testEscapeQuery", testEscapeQuery},
@@ -18,6 +27,123 @@ function test()
             io.write(string.format("PASS %s\n", test_name))
         end
     end
+end
+
+function testClientSizeNormal(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_maxlen = 3
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/ur", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(1, 52149, "/ur")
+end
+
+function testClientSizeError(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_maxlen = 3
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_size, nil)
+    t.env.async._assert_cnt(0)
+end
+
+function testClientBusyAfterInit(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(1, 52149, "/url")
+end
+
+function testClientBusyAfterGet(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_busy, nil)
+    t.env.async._assert_cnt(1)
+end
+
+function testClientBusyAfterCancel(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.clientHttpCancel()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_busy, nil)
+    t.env.async._assert_cnt(1)
+end
+
+function testClientBusyAfterTimeout(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_timeout = 0
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.clientOnTick()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(2, 52149, "/url")
+end
+
+function testClientBusyAfterReply(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.clientHttpReply(52149, "/url", "resp")
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(2, 52149, "/url")
+end
+
+function testClientBusyAfterCancelTimeout(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_timeout = 0
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.clientHttpCancel()
+    t.env.clientOnTick()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(2, 52149, "/url")
+end
+
+function testClientBusyAfterCancelReply(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.clientHttpCancel()
+    t.env.clientHttpReply(52149, "/url", "resp")
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_wait()
+    t.env.async._assert_call(2, 52149, "/url")
 end
 
 function testEncodeCSVRecord(t)
@@ -133,10 +259,84 @@ function buildT()
             self.env.tonumber = tonumber
             self.env.tostring = tostring
             self.env.type = type
+            self.env.async = buildMockAsync()
         end
     }
     t:reset()
     return t
+end
+
+function buildMockAsync()
+    local async = {
+        _cnt = 0,
+        _port = nil,
+        _url = nil,
+    }
+
+    async.httpGet = function(port, url)
+        async._cnt = async._cnt + 1
+        async._port = port
+        async._url = url
+    end
+
+    async._assert_cnt = function(cnt)
+        if async._cnt ~= cnt then
+            error(string.format("%q", async._cnt))
+        end
+    end
+
+    async._assert_call = function(cnt, port, url)
+        if async._cnt ~= cnt then
+            error(string.format("%q", async._cnt))
+        end
+        if async._port ~= port then
+            error(string.format("%q", async._port))
+        end
+        if async._url ~= url then
+            error(string.format("%q", async._url))
+        end
+    end
+
+    return async
+end
+
+function buildMockClientCallback()
+    local callback = {
+        cnt = 0,
+        ctx = nil,
+        status = nil,
+        resp = nil,
+    }
+
+    callback.fn = function(ctx, status, resp)
+        callback.cnt = callback.cnt + 1
+        callback.ctx = ctx
+        callback.status = status
+        callback.resp = resp
+    end
+
+    callback.assert_wait = function()
+        if callback.cnt ~= 0 then
+            error(string.format("%q", callback.cnt))
+        end
+    end
+
+    callback.assert_call = function(ctx, status, resp)
+        if callback.cnt ~= 1 then
+            error(string.format("%q", callback.cnt))
+        end
+        if callback.ctx ~= ctx then
+            error(string.format("%q", callback.ctx))
+        end
+        if callback.status ~= status then
+            error(string.format("%q", callback.status))
+        end
+        if callback.resp ~= resp then
+            error(string.format("%q", callback.resp))
+        end
+    end
+
+    return callback
 end
 
 test()
