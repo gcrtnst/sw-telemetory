@@ -1,3 +1,73 @@
+function init()
+    clientInit()
+end
+
+function onTick()
+    clientOnTick()
+end
+
+function clientInit()
+    c_client_maxlen = 3840
+    c_client_timeout = 600
+    clientInitVar()
+end
+
+function clientInitVar()
+    g_client_timeout = nil
+    g_client_ctx = nil
+    g_client_port = nil
+    g_client_req = nil
+    g_client_callback = nil
+end
+
+function clientOnTick()
+    if g_client_timeout ~= nil then
+        g_client_timeout = g_client_timeout - 1
+        if g_client_timeout <= 0 then
+            clientHttpFinish(nil)
+            return
+        end
+    end
+end
+
+function clientHttpReply(port, req, resp)
+    if g_client_timeout == nil or g_client_port ~= port or g_client_req ~= req then
+        return
+    end
+    clientHttpFinish(resp)
+end
+
+function clientHttpGet(ctx, port, req, callback)
+    if #req > c_client_maxlen or g_client_timeout ~= nil then
+        return false
+    end
+
+    g_client_timeout = c_client_timeout
+    g_client_ctx = ctx
+    g_client_port = port
+    g_client_req = req
+    g_client_callback = callback
+    async.httpGet(port, req)
+    return true
+end
+
+function clientHttpCancel()
+    local ctx = g_client_ctx
+    local callback = g_client_callback
+    g_client_ctx = nil
+    g_client_callback = function() end
+
+    callback(ctx, nil)
+end
+
+function clientHttpFinish(resp)
+    local ctx = g_client_ctx
+    local callback = g_client_callback
+    clientInitVar()
+
+    callback(ctx, resp)
+end
+
 function encodeCSVRecord(record)
     if type(record) ~= "table" then
         return nil
@@ -56,3 +126,5 @@ function escapeQuery(s)
     end
     return table.concat(out)
 end
+
+init()
