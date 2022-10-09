@@ -151,7 +151,7 @@ function g_test_tbl.testClientCancel(t)
     callback.assert_call("ctx", t.env.c_client_status_cancel, nil)
 end
 
-function g_test_tbl.testClientCancelNothing(t)
+function g_test_tbl.testClientCancelIdle(t)
     t:reset()
     t.fn()
     t.env.clientHttpCancel()
@@ -213,8 +213,9 @@ function g_test_tbl.testClientTimeoutBefore(t)
     callback.assert_wait()
 
     -- confirm busy
-    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
-    t.env.async._assert_cnt(1)
+    callback = buildMockClientCallback()
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_busy, nil)
 end
 
 function g_test_tbl.testClientTimeoutAfter(t)
@@ -252,6 +253,75 @@ function g_test_tbl.testClientTimeoutGet(t)
     t.env.clientOnTick()
     t.env.clientOnTick()
     t.env.clientOnTick()
+    if not callback_called then
+        error(string.format("%q", callback_called))
+    end
+end
+
+function g_test_tbl.testClientReply(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    t.env.clientHttpReply(52149, "/url", "resp")
+    callback.assert_call("ctx", t.env.c_client_status_ok, "resp")
+
+    -- confirm idle
+    t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+    t.env.async._assert_call(2, 52149, "/url")
+end
+
+function g_test_tbl.testClientReplyIgnoreIdle(t)
+    t:reset()
+    t.fn()
+    t.env.clientHttpReply(52149, "/url", "resp")
+end
+
+function g_test_tbl.testClientReplyIgnorePort(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    t.env.clientHttpReply(52148, "/url", "resp")
+    callback.assert_wait()
+
+    -- confirm busy
+    callback = buildMockClientCallback()
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_busy, nil)
+end
+
+function g_test_tbl.testClientReplyIgnoreReq(t)
+    t:reset()
+    t.fn()
+    local callback = buildMockClientCallback()
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    t.env.clientHttpReply(52149, "/dmy", "resp")
+    callback.assert_wait()
+
+    -- confirm busy
+    callback = buildMockClientCallback()
+    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    callback.assert_call("ctx", t.env.c_client_status_busy, nil)
+end
+
+function g_test_tbl.testClientReplyGet(t)
+    t:reset()
+    t.fn()
+
+    local callback_called = false
+    local callback = function(ctx, status, resp)
+        callback_called = true
+
+        t.env.clientHttpGet("ctx", 52149, "/url", function() end)
+        t.env.async._assert_call(2, 52149, "/url")
+    end
+
+    t.env.clientHttpGet("ctx", 52149, "/url", callback)
+    t.env.clientHttpReply(52149, "/url", "resp")
     if not callback_called then
         error(string.format("%q", callback_called))
     end
