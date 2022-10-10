@@ -31,7 +31,8 @@ function g_test_tbl.testClientSizeNormal(t)
     t.env.c_client_maxlen = 3
     local callback = buildMockClientCallback("callback")
 
-    t.env.clientHttpGet("ctx", 52149, "/ur", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/ur", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(1, 52149, "/ur")
 end
@@ -43,8 +44,9 @@ function g_test_tbl.testClientSizeError(t)
     t.env.c_client_maxlen = 3
     local callback = buildMockClientCallback("callback")
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_size, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_size, status)
+    callback:assertWait()
     t.env.async:assertCallCount(0)
 end
 
@@ -53,7 +55,8 @@ function g_test_tbl.testClientBusyAfterInit(t)
     t.fn()
     local callback = buildMockClientCallback("callback")
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(1, 52149, "/url")
 end
@@ -65,8 +68,9 @@ function g_test_tbl.testClientBusyAfterGet(t)
 
     t.env.clientHttpGet("ctx", 52149, "/url", function() end)
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_busy, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_busy, status)
+    callback:assertWait()
     t.env.async:assertCallCount(1)
 end
 
@@ -78,8 +82,9 @@ function g_test_tbl.testClientBusyAfterCancel(t)
     t.env.clientHttpGet("ctx", 52149, "/url", function() end)
     t.env.clientHttpCancel()
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_busy, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_busy, status)
+    callback:assertWait()
     t.env.async:assertCallCount(1)
 end
 
@@ -93,7 +98,8 @@ function g_test_tbl.testClientBusyAfterTimeout(t)
     t.env.clientHttpGet("ctx", 52149, "/url", function() end)
     t.env.clientOnTick()
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -106,7 +112,8 @@ function g_test_tbl.testClientBusyAfterReply(t)
     t.env.clientHttpGet("ctx", 52149, "/url", function() end)
     t.env.clientHttpReply(52149, "/url", "resp")
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -122,7 +129,8 @@ function g_test_tbl.testClientBusyAfterCancelTimeout(t)
     t.env.clientHttpCancel()
     t.env.clientOnTick()
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -136,7 +144,8 @@ function g_test_tbl.testClientBusyAfterCancelReply(t)
     t.env.clientHttpCancel()
     t.env.clientHttpReply(52149, "/url", "resp")
 
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", nil, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -214,8 +223,8 @@ function g_test_tbl.testClientTimeoutBefore(t)
 
     -- confirm busy
     local callback = buildMockClientCallback("callback")
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_busy, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_busy, status)
 end
 
 function g_test_tbl.testClientTimeoutAfter(t)
@@ -287,8 +296,8 @@ function g_test_tbl.testClientReplyIgnorePort(t)
 
     -- confirm busy
     local callback = buildMockClientCallback("callback")
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_busy, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_busy, status)
 end
 
 function g_test_tbl.testClientReplyIgnoreReq(t)
@@ -302,8 +311,8 @@ function g_test_tbl.testClientReplyIgnoreReq(t)
 
     -- confirm busy
     local callback = buildMockClientCallback("callback")
-    t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    callback:assertCall("ctx", t.env.c_client_status_busy, nil)
+    local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
+    assertEqual("status", t.env.c_client_status_busy, status)
 end
 
 function g_test_tbl.testClientReplyGet(t)

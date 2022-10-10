@@ -46,12 +46,10 @@ end
 
 function clientHttpGet(ctx, port, req, callback)
     if #req > c_client_maxlen then
-        callback(ctx, c_client_status_size, nil)
-        return
+        return c_client_status_size
     end
     if g_client_timeout ~= nil then
-        callback(ctx, c_client_status_busy, nil)
-        return
+        return c_client_status_busy
     end
 
     g_client_timeout = c_client_timeout
