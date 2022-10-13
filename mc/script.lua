@@ -10,11 +10,12 @@ function clientInit()
     c_client_maxlen = 3840
     c_client_timeout = 600
 
-    c_client_status_ok = 0
-    c_client_status_size = 1
-    c_client_status_busy = 2
-    c_client_status_cancel = 3
-    c_client_status_timeout = 4
+    c_client_status_done = "done"
+    c_client_status_pend = "pend"
+    c_client_status_size = "size"
+    c_client_status_busy = "busy"
+    c_client_status_cancel = "cancel"
+    c_client_status_timeout = "timeout"
 
     clientInitVar()
 end
@@ -41,7 +42,7 @@ function clientHttpReply(port, req, resp)
     if g_client_timeout == nil or g_client_port ~= port or g_client_req ~= req then
         return
     end
-    clientHttpFinish(c_client_status_ok, resp)
+    clientHttpFinish(c_client_status_done, resp)
 end
 
 function clientHttpGet(ctx, port, req, callback)
@@ -58,6 +59,7 @@ function clientHttpGet(ctx, port, req, callback)
     g_client_req = req
     g_client_callback = callback
     async.httpGet(port, req)
+    return c_client_status_pend
 end
 
 function clientHttpCancel()

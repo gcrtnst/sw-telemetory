@@ -32,7 +32,7 @@ function g_test_tbl.testClientSizeNormal(t)
     local callback = buildMockClientCallback("callback")
 
     local status = t.env.clientHttpGet("ctx", 52149, "/ur", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(1, 52149, "/ur")
 end
@@ -56,7 +56,7 @@ function g_test_tbl.testClientBusyAfterInit(t)
     local callback = buildMockClientCallback("callback")
 
     local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(1, 52149, "/url")
 end
@@ -99,7 +99,7 @@ function g_test_tbl.testClientBusyAfterTimeout(t)
     t.env.clientOnTick()
 
     local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -113,7 +113,7 @@ function g_test_tbl.testClientBusyAfterReply(t)
     t.env.clientHttpReply(52149, "/url", "resp")
 
     local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -130,7 +130,7 @@ function g_test_tbl.testClientBusyAfterCancelTimeout(t)
     t.env.clientOnTick()
 
     local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -145,7 +145,7 @@ function g_test_tbl.testClientBusyAfterCancelReply(t)
     t.env.clientHttpReply(52149, "/url", "resp")
 
     local status = t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
-    assertEqual("status", nil, status)
+    assertEqual("status", t.env.c_client_status_pend, status)
     callback:assertWait()
     t.env.async:assertCall(2, 52149, "/url")
 end
@@ -272,7 +272,7 @@ function g_test_tbl.testClientReply(t)
 
     t.env.clientHttpGet("ctx", 52149, "/url", callback.fn)
     t.env.clientHttpReply(52149, "/url", "resp")
-    callback:assertCall("ctx", t.env.c_client_status_ok, "resp")
+    callback:assertCall("ctx", t.env.c_client_status_done, "resp")
 
     -- confirm idle
     t.env.clientHttpGet("ctx", 52149, "/url", function() end)
