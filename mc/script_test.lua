@@ -10,6 +10,7 @@ function test()
     end)
 
     local t = buildT()
+    local s = "PASS"
     for _, test_entry in ipairs(test_tbl) do
         local test_name, test_fn = table.unpack(test_entry)
         t:reset()
@@ -18,10 +19,517 @@ function test()
         if not is_success then
             io.write(string.format("FAIL %s\n", test_name))
             io.write(string.format("     %s\n", err))
+            s = "FAIL"
         else
             io.write(string.format("PASS %s\n", test_name))
         end
     end
+    io.write(s .. "\n")
+end
+
+function g_test_tbl.testSendRequestStateInit(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+end
+
+function g_test_tbl.testSendRequestStateCancel(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(2, 52150, "/time")
+
+    t.env.httpReply(52150, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(3, 52150, "/write?path=title2%2Ftitle2-20060102150405.csv&data=data2")
+end
+
+function g_test_tbl.testSendRequestStateError(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title/", "data")
+    t.env.async:assertCallCount(0)
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCallCount(0)
+end
+
+function g_test_tbl.testSendRequestStateTime(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendRequest(52150, "title2", "data2")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1data2")
+end
+
+function g_test_tbl.testSendRequestStateWrite(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.sendRequest(52151, "title3", "data3")
+
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "SVCOK")
+    t.env.async:assertCall(3, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data2data3")
+end
+
+function g_test_tbl.testSendRequestErrorTitleEmpty(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "", "data")
+    t.env.async:assertCallCount(0)
+
+    -- confirm send error
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCallCount(0)
+end
+
+function g_test_tbl.testSendRequestErrorTitleSlash(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title/", "data")
+    t.env.async:assertCallCount(0)
+
+    -- confirm send error
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCallCount(0)
+end
+
+function g_test_tbl.testSendRequestIgnorePortTitle(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendRequest(nil, nil, "data2")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1data2")
+end
+
+function g_test_tbl.testSendCancelStateInit(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendCancel()
+
+    -- confirm send inactive
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(1, 52150, "/time")
+end
+
+function g_test_tbl.testSendCancelStateCancel(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+    t.env.sendCancel()
+
+    -- confirm client cancel
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    -- confirm send inactive
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(2, 52150, "/time")
+
+    -- confirm send reset
+    t.env.httpReply(52150, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(3, 52150, "/write?path=title2%2Ftitle2-20060102150405.csv&data=data2")
+end
+
+function g_test_tbl.testSendCancelStateError(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title/", "data1")
+    t.env.async:assertCallCount(0)
+
+    t.env.sendCancel()
+
+    -- confirm send inactive
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(1, 52150, "/time")
+
+    -- confirm send reset
+    t.env.httpReply(52150, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52150, "/write?path=title2%2Ftitle2-20060102150405.csv&data=data2")
+end
+
+function g_test_tbl.testSendCancelStateTime(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+
+    -- confirm client cancel
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    -- confirm send inactive
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(2, 52150, "/time")
+
+    -- confirm send reset
+    t.env.httpReply(52150, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(3, 52150, "/write?path=title2%2Ftitle2-20060102150405.csv&data=data2")
+end
+
+function g_test_tbl.testSendCancelStateWrite(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(2)
+
+    t.env.sendCancel()
+
+    -- confirm client cancel
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "SVCOK")
+    t.env.async:assertCallCount(2)
+
+    -- confirm send inactive
+    t.env.sendRequest(52151, "title3", "data3")
+    t.env.async:assertCall(3, 52151, "/time")
+
+    -- confirm send reset
+    t.env.httpReply(52151, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(4, 52151, "/write?path=title3%2Ftitle3-20060102150405.csv&data=data3")
+end
+
+function g_test_tbl.testSendOnTickStateInit(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendOnTick()
+    t.env.async:assertCallCount(0)
+end
+
+function g_test_tbl.testSendOnTickStateCancel(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    t.env.sendOnTick()
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendOnTickStateError(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "timeout")
+    t.env.async:assertCallCount(1)
+
+    t.env.sendOnTick()
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendOnTickStateTime(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    t.env.sendOnTick()
+    t.env.async:assertCall(2, 52150, "/time")
+end
+
+function g_test_tbl.testSendTimeRequestPend(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    -- confirm accept response
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=data")
+end
+
+function g_test_tbl.testSendTimeRequestBusy(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    -- confirm retry request
+    t.env.sendOnTick()
+    t.env.async:assertCall(2, 52150, "/time")
+end
+
+function g_test_tbl.testSendTimeResponseDoneOK(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=data")
+end
+
+function g_test_tbl.testSendTimeResponseDoneSlash(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK2006010215040/")
+    t.env.async:assertCallCount(1)
+
+    -- confirm send error
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendTimeResponseDoneError(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "timeout")
+    t.env.async:assertCallCount(1)
+
+    -- confirm send error
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendTimeResponseCancel(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendCancel()
+    t.env.async:assertCallCount(1)
+
+    -- confirm send reset
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(2, 52150, "/time")
+end
+
+function g_test_tbl.testSendTimeResponseTimeout(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_timeout = 1
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.sendOnTick()
+    t.env.async:assertCallCount(1)
+
+    -- confirm client timeout
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+
+    -- confirm send error
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendWriteRequestPend(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=data")
+
+    -- confirm buf clear
+    t.env.httpReply(52149, "/write?path=title%2Ftitle-20060102150405.csv&data=data", "SVCOK")
+    t.env.async:assertCallCount(2)
+end
+
+function g_test_tbl.testSendWriteRequestSize(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_maxlen = 53
+
+    t.env.sendRequest(52149, "title", "data")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testSendWriteResponseDoneOK(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "SVCOK")
+    t.env.async:assertCallCount(2)
+
+    -- confirm send active
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(3, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data2")
+end
+
+function g_test_tbl.testSendWriteResponseDoneError(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "timeout")
+    t.env.async:assertCallCount(2)
+
+    -- confirm send error
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(2)
+end
+
+function g_test_tbl.testSendWriteResponseCancel(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.sendCancel()
+    t.env.async:assertCallCount(2)
+
+    -- confirm send reset
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "SVCOK")
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCall(3, 52150, "/time")
+end
+
+function g_test_tbl.testSendWriteResponseTimeout(t)
+    t:reset()
+    t.fn()
+
+    t.env.c_client_timeout = 1
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+
+    t.env.sendOnTick()
+    t.env.async:assertCallCount(2)
+
+    -- confirm send error
+    t.env.httpReply(52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1", "SVCOK")
+    t.env.sendRequest(52150, "title2", "data2")
+    t.env.async:assertCallCount(2)
+end
+
+function g_test_tbl.testSendEventTime(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+end
+
+function g_test_tbl.testSendEventWrite(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "data1")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title1%2Ftitle1-20060102150405.csv&data=data1")
+end
+
+function g_test_tbl.testSendEventWriteEmpty(t)
+    t:reset()
+    t.fn()
+
+    t.env.sendRequest(52149, "title1", "")
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
 end
 
 function g_test_tbl.testClientSizeNormal(t)

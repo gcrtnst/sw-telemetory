@@ -1,9 +1,112 @@
 function init()
-    clientInit()
+    sendInit()
 end
 
 function onTick()
+    sendOnTick()
+end
+
+function httpReply(port, req, resp)
+    clientHttpReply(port, req, resp)
+end
+
+function sendInit()
+    clientInit()
+
+    c_send_ctx_time = 0x11
+    c_send_ctx_write = 0x12
+    sendInitVar()
+end
+
+function sendInitVar()
+    g_send_error = false
+    g_send_active = false
+    g_send_port = nil
+    g_send_title = nil
+    g_send_buf = nil
+    g_send_path = nil
+end
+
+function sendOnTick()
     clientOnTick()
+
+    if g_send_active then
+        sendEvent()
+    end
+end
+
+function sendRequest(port, title, data)
+    if g_send_error then
+        return
+    end
+
+    if not g_send_active then
+        if title == "" or string.match(title, "/") ~= nil then
+            sendError()
+            return
+        end
+
+        g_send_active = true
+        g_send_port = port
+        g_send_title = title
+        g_send_buf = ""
+    end
+
+    g_send_buf = g_send_buf .. data
+    sendEvent()
+end
+
+function sendCancel()
+    clientHttpCancel()
+    sendInitVar()
+end
+
+function sendEvent()
+    if g_send_path == nil then
+        local status = clientHttpGet(c_send_ctx_time, g_send_port, "/time", sendCallback)
+        if status ~= c_client_status_pend and status ~= c_client_status_busy then
+            sendError()
+            return
+        end
+        return
+    end
+
+    if #g_send_buf > 0 then
+        local req = "/write?path=" .. escapeQuery(g_send_path) .. "&data=" .. escapeQuery(g_send_buf)
+        local status = clientHttpGet(c_send_ctx_write, g_send_port, req, sendCallback)
+        if status == c_client_status_busy then
+            return
+        end
+        if status ~= c_client_status_pend then
+            sendError()
+            return
+        end
+        g_send_buf = ""
+        return
+    end
+end
+
+function sendCallback(ctx, status, resp)
+    if status ~= c_client_status_done or string.sub(resp, 1, 5) ~= "SVCOK" then
+        sendError()
+        return
+    end
+
+    if ctx == c_send_ctx_time then
+        local time = string.sub(resp, 6)
+        if string.match(time, "^%d%d%d%d%d%d%d%d%d%d%d%d%d%d$") == nil then
+            sendError()
+            return
+        end
+        g_send_path = string.format("%s/%s-%s.csv", g_send_title, g_send_title, time)
+    end
+
+    sendEvent()
+end
+
+function sendError()
+    sendCancel()
+    g_send_error = true
 end
 
 function clientInit()
