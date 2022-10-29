@@ -113,12 +113,12 @@ function clientInit()
     c_client_maxlen = 3840
     c_client_timeout = 600
 
-    c_client_status_done = "done"
-    c_client_status_pend = "pend"
-    c_client_status_size = "size"
-    c_client_status_busy = "busy"
-    c_client_status_cancel = "cancel"
-    c_client_status_timeout = "timeout"
+    c_client_status_done = 0x00
+    c_client_status_pend = 0x01
+    c_client_status_size = 0x02
+    c_client_status_busy = 0x03
+    c_client_status_cancel = 0x04
+    c_client_status_timeout = 0x05
 
     clientInitVar()
 end
