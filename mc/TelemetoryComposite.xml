@@ -1,0 +1,613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<microprocessor name="Telemetory Composite" description="No description set." width="1" length="1" id_counter="73" id_counter_node="1" sym1="32766" sym2="16386" sym3="16386" sym4="19970" sym5="19970" sym6="32766" sym7="3584" sym8="3584" sym9="3584" sym10="32704" sym11="16256" sym12="7936" sym13="3584" sym14="1024">
+	<nodes>
+		<n id="1" component_id="2">
+			<node label="Input" mode="1" type="5"/>
+		</n>
+	</nodes>
+	<group>
+		<data>
+			<inputs/>
+			<outputs/>
+		</data>
+		<components>
+			<c type="56">
+				<object id="3" script='a=string;k=table;A=property;Q=input;a2=type;ao=math;ap=async;aq=ipairs;
+--yyy--
+function a3()a4()v=v or nil;w=w or 1;x=x or 32;y=y or 1;z=z or 32;L=ao.floor(A.getNumber("Port"))M=A.getText("Title")a5=a6()p=0 end;function a7()a8()if not a9()then p=0;N()return end;if p==0 then O(L,M,a5)end;O(L,M,aa())p=p+1 end;function a6()local B={"#"}for d=w,x do local C=A.getText(a.format("Bool Label %d",d))k.insert(B,C)end;for d=y,z do local C=A.getText(a.format("Number Label %d",d))k.insert(B,C)end;return P(B)end;function a9()if v==nil then return true end;return Q.getBool(v)end;function aa()local l={a.format("%d",p)}for d=w,x do local g=Q.getBool(d)g=g and"TRUE"or"FALSE"k.insert(l,g)end;for d=y,z do local g=Q.getNumber(d)g=a.format("%G",g)k.insert(l,g)end;return P(l)end;function a4()ab()R=0x11;ac=0x12;S()end;function S()T=false;D=false;E=nil;F=nil;m=nil;G=nil end;function a8()ad()if D then H()end end;function O(n,I,ae)if T then return end;if not D then if I==""or a.match(I,"/")~=nil then q()return end;D=true;E=n;F=I;m=""end;m=m..ae;H()end;function N()af()S()end;function H()if G==nil then local e=U(R,E,"/time",V)if e~=J and e~=K then q()return end;return end;if#m&gt;0 then local h="/write?path="..W(G).."&amp;data="..W(m)local e=U(ac,E,h,V)if e==K then return end;if e~=J then q()return end;m=""return end end;function V(i,e,o)if e~=X or a.sub(o,1,5)~="SVCOK"then q()return end;if i==R then local Y=a.sub(o,6)if a.match(Y,"^%d%d%d%d%d%d%d%d%d%d%d%d%d%d$")==nil then q()return end;G=a.format("%s/%s-%s.csv",F,F,Y)end;H()end;function q()N()T=true end;function ab()ag=3840;ah=600;X=0x00;J=0x01;ai=0x02;K=0x03;aj=0x04;ak=0x05;Z()end;function Z()f=nil;t=nil;_=nil;a0=nil;u=nil end;function ad()if f~=nil then f=f-1;if f&lt;=0 then a1(ak,nil)return end end end;function al(n,h,o)if f==nil or _~=n or a0~=h then return end;a1(X,o)end;function U(i,n,h,r)if#h&gt;ag then return ai end;if f~=nil then return K end;f=ah;t=i;_=n;a0=h;u=r;ap.httpGet(n,h)return J end;function af()if f==nil then return end;local i=t;local r=u;t=nil;u=function()end;r(i,aj,nil)end;function a1(e,o)local i=t;local r=u;Z()r(i,e,o)end;function P(l)if a2(l)~="table"then return nil end;local s={}for d,b in aq(l)do local j=am(b)if j==nil then return nil end;s[d]=j end;return k.concat(s,",").."\r\n"end;function am(b)if a2(b)~="string"then return nil end;if a.match(b,"\r\n")~=nil or a.match(b,&apos;[",]&apos;)~=nil then b=a.gsub(b,&apos;"&apos;,&apos;""&apos;)b=&apos;"&apos;..b..&apos;"&apos;end;return b end;function W(b)if a2(b)~="string"then return nil end;local s={}for d=1,#b do local c=a.byte(b,d)local j;if c==0x2D or c==0x2E or 0x30&lt;=c and c&lt;=0x39 or 0x41&lt;=c and c&lt;=0x5A or c==0x5F or 0x61&lt;=c and c&lt;=0x7A or c==0x7E then j=a.char(c)elseif c==0x20 then j="+"else j=a.format("%%%02X",c)end;k.insert(s,j)end;return k.concat(s)end;an=a3;onTick=a7;httpReply=al;an()'>
+					<pos x="3" y="1.25"/>
+					<in1 component_id="2">
+						<v/>
+					</in1>
+					<in2>
+						<v/>
+					</in2>
+					<out1>
+						<v/>
+					</out1>
+					<out2>
+						<v/>
+					</out2>
+				</object>
+			</c>
+			<c type="34">
+				<object id="4" n="Port">
+					<pos x="-4" y="1.5"/>
+					<out1/>
+					<v text="0"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="5" n="Title" v="telemetory">
+					<pos x="-4" y="1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="6" n="Bool Label 1" v="Bool 1">
+					<pos x="-2.75" y="1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="7" n="Bool Label 2" v="Bool 2">
+					<pos x="-2.75" y="1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="8" n="Bool Label 3" v="Bool 3">
+					<pos x="-2.75" y="1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="9" n="Bool Label 4" v="Bool 4">
+					<pos x="-2.75" y="0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="10" n="Bool Label 5" v="Bool 5">
+					<pos x="-2.75" y="0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="11" n="Bool Label 6" v="Bool 6">
+					<pos x="-2.75" y="0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="12" n="Bool Label 7" v="Bool 7">
+					<pos x="-2.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="13" n="Bool Label 8" v="Bool 8">
+					<pos x="-2.75" y="-0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="14" n="Bool Label 9" v="Bool 9">
+					<pos x="-2.75" y="-0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="15" n="Bool Label 10" v="Bool 10">
+					<pos x="-2.75" y="-0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="16" n="Bool Label 11" v="Bool 11">
+					<pos x="-2.75" y="-1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="17" n="Bool Label 12" v="Bool 12">
+					<pos x="-2.75" y="-1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="18" n="Bool Label 13" v="Bool 13">
+					<pos x="-2.75" y="-1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="19" n="Bool Label 14" v="Bool 14">
+					<pos x="-2.75" y="-1.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="20" n="Bool Label 15" v="Bool 15">
+					<pos x="-2.75" y="-2"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="21" n="Bool Label 16" v="Bool 16">
+					<pos x="-2.75" y="-2.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="22" n="Bool Label 17" v="Bool 17">
+					<pos x="-1.75" y="1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="23" n="Bool Label 18" v="Bool 18">
+					<pos x="-1.75" y="1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="24" n="Bool Label 19" v="Bool 19">
+					<pos x="-1.75" y="1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="25" n="Bool Label 20" v="Bool 20">
+					<pos x="-1.75" y="0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="27" n="Bool Label 21" v="Bool 21">
+					<pos x="-1.75" y="0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="28" n="Bool Label 22" v="Bool 22">
+					<pos x="-1.75" y="0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="29" n="Bool Label 23" v="Bool 23">
+					<pos x="-1.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="30" n="Bool Label 24" v="Bool 24">
+					<pos x="-1.75" y="-0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="31" n="Bool Label 25" v="Bool 25">
+					<pos x="-1.75" y="-0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="32" n="Bool Label 26" v="Bool 26">
+					<pos x="-1.75" y="-0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="33" n="Bool Label 27" v="Bool 27">
+					<pos x="-1.75" y="-1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="34" n="Bool Label 28" v="Bool 28">
+					<pos x="-1.75" y="-1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="35" n="Bool Label 29" v="Bool 29">
+					<pos x="-1.75" y="-1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="36" n="Bool Label 30" v="Bool 30">
+					<pos x="-1.75" y="-1.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="37" n="Bool Label 31" v="Bool 31">
+					<pos x="-1.75" y="-2"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="38" n="Bool Label 32" v="Bool 32">
+					<pos x="-1.75" y="-2.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="40" n="Number Label 1" v="Number 1">
+					<pos x="-0.5" y="1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="41" n="Number Label 2" v="Number 2">
+					<pos x="-0.5" y="1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="42" n="Number Label 3" v="Number 3">
+					<pos x="-0.5" y="1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="43" n="Number Label 4" v="Number 4">
+					<pos x="-0.5" y="0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="44" n="Number Label 5" v="Number 5">
+					<pos x="-0.5" y="0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="45" n="Number Label 6" v="Number 6">
+					<pos x="-0.5" y="0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="46" n="Number Label 7" v="Number 7">
+					<pos x="-0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="47" n="Number Label 8" v="Number 8">
+					<pos x="-0.5" y="-0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="48" n="Number Label 9" v="Number 9">
+					<pos x="-0.5" y="-0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="49" n="Number Label 10" v="Number 10">
+					<pos x="-0.5" y="-0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="50" n="Number Label 11" v="Number 11">
+					<pos x="-0.5" y="-1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="51" n="Number Label 12" v="Number 12">
+					<pos x="-0.5" y="-1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="52" n="Number Label 13" v="Number 13">
+					<pos x="-0.5" y="-1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="53" n="Number Label 14" v="Number 14">
+					<pos x="-0.5" y="-1.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="54" n="Number Label 15" v="Number 15">
+					<pos x="-0.5" y="-2"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="55" n="Number Label 16" v="Number 16">
+					<pos x="-0.5" y="-2.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="56" n="Number Label 17" v="Number 17">
+					<pos x="0.5" y="1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="57" n="Number Label 18" v="Number 18">
+					<pos x="0.5" y="1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="59" n="Number Label 19" v="Number 19">
+					<pos x="0.5" y="1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="60" n="Number Label 20" v="Number 20">
+					<pos x="0.5" y="0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="61" n="Number Label 21" v="Number 21">
+					<pos x="0.5" y="0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="62" n="Number Label 22" v="Number 22">
+					<pos x="0.5" y="0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="63" n="Number Label 23" v="Number 23">
+					<pos x="0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="64" n="Number Label 24" v="Number 24">
+					<pos x="0.5" y="-0.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="65" n="Number Label 25" v="Number 25">
+					<pos x="0.5" y="-0.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="66" n="Number Label 26" v="Number 26">
+					<pos x="0.5" y="-0.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="67" n="Number Label 27" v="Number 27">
+					<pos x="0.5" y="-1"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="68" n="Number Label 28" v="Number 28">
+					<pos x="0.5" y="-1.25"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="69" n="Number Label 29" v="Number 29">
+					<pos x="0.5" y="-1.5"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="70" n="Number Label 30" v="Number 30">
+					<pos x="0.5" y="-1.75"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="71" n="Number Label 31" v="Number 31">
+					<pos x="0.5" y="-2"/>
+				</object>
+			</c>
+			<c type="58">
+				<object id="72" n="Number Label 32" v="Number 32">
+					<pos x="0.5" y="-2.25"/>
+				</object>
+			</c>
+		</components>
+		<components_bridge>
+			<c type="4">
+				<object id="2">
+					<pos x="1.75" y="1.5"/>
+					<in1>
+						<v/>
+					</in1>
+					<out1>
+						<v/>
+					</out1>
+				</object>
+			</c>
+		</components_bridge>
+		<groups/>
+		<component_states>
+			<c0 id="3" script='a=string;k=table;A=property;Q=input;a2=type;ao=math;ap=async;aq=ipairs;
+--yyy--
+function a3()a4()v=v or nil;w=w or 1;x=x or 32;y=y or 1;z=z or 32;L=ao.floor(A.getNumber("Port"))M=A.getText("Title")a5=a6()p=0 end;function a7()a8()if not a9()then p=0;N()return end;if p==0 then O(L,M,a5)end;O(L,M,aa())p=p+1 end;function a6()local B={"#"}for d=w,x do local C=A.getText(a.format("Bool Label %d",d))k.insert(B,C)end;for d=y,z do local C=A.getText(a.format("Number Label %d",d))k.insert(B,C)end;return P(B)end;function a9()if v==nil then return true end;return Q.getBool(v)end;function aa()local l={a.format("%d",p)}for d=w,x do local g=Q.getBool(d)g=g and"TRUE"or"FALSE"k.insert(l,g)end;for d=y,z do local g=Q.getNumber(d)g=a.format("%G",g)k.insert(l,g)end;return P(l)end;function a4()ab()R=0x11;ac=0x12;S()end;function S()T=false;D=false;E=nil;F=nil;m=nil;G=nil end;function a8()ad()if D then H()end end;function O(n,I,ae)if T then return end;if not D then if I==""or a.match(I,"/")~=nil then q()return end;D=true;E=n;F=I;m=""end;m=m..ae;H()end;function N()af()S()end;function H()if G==nil then local e=U(R,E,"/time",V)if e~=J and e~=K then q()return end;return end;if#m&gt;0 then local h="/write?path="..W(G).."&amp;data="..W(m)local e=U(ac,E,h,V)if e==K then return end;if e~=J then q()return end;m=""return end end;function V(i,e,o)if e~=X or a.sub(o,1,5)~="SVCOK"then q()return end;if i==R then local Y=a.sub(o,6)if a.match(Y,"^%d%d%d%d%d%d%d%d%d%d%d%d%d%d$")==nil then q()return end;G=a.format("%s/%s-%s.csv",F,F,Y)end;H()end;function q()N()T=true end;function ab()ag=3840;ah=600;X=0x00;J=0x01;ai=0x02;K=0x03;aj=0x04;ak=0x05;Z()end;function Z()f=nil;t=nil;_=nil;a0=nil;u=nil end;function ad()if f~=nil then f=f-1;if f&lt;=0 then a1(ak,nil)return end end end;function al(n,h,o)if f==nil or _~=n or a0~=h then return end;a1(X,o)end;function U(i,n,h,r)if#h&gt;ag then return ai end;if f~=nil then return K end;f=ah;t=i;_=n;a0=h;u=r;ap.httpGet(n,h)return J end;function af()if f==nil then return end;local i=t;local r=u;t=nil;u=function()end;r(i,aj,nil)end;function a1(e,o)local i=t;local r=u;Z()r(i,e,o)end;function P(l)if a2(l)~="table"then return nil end;local s={}for d,b in aq(l)do local j=am(b)if j==nil then return nil end;s[d]=j end;return k.concat(s,",").."\r\n"end;function am(b)if a2(b)~="string"then return nil end;if a.match(b,"\r\n")~=nil or a.match(b,&apos;[",]&apos;)~=nil then b=a.gsub(b,&apos;"&apos;,&apos;""&apos;)b=&apos;"&apos;..b..&apos;"&apos;end;return b end;function W(b)if a2(b)~="string"then return nil end;local s={}for d=1,#b do local c=a.byte(b,d)local j;if c==0x2D or c==0x2E or 0x30&lt;=c and c&lt;=0x39 or 0x41&lt;=c and c&lt;=0x5A or c==0x5F or 0x61&lt;=c and c&lt;=0x7A or c==0x7E then j=a.char(c)elseif c==0x20 then j="+"else j=a.format("%%%02X",c)end;k.insert(s,j)end;return k.concat(s)end;an=a3;onTick=a7;httpReply=al;an()'>
+				<pos x="3" y="1.25"/>
+				<in1 component_id="2">
+					<v/>
+				</in1>
+				<in2>
+					<v/>
+				</in2>
+				<out1>
+					<v/>
+				</out1>
+				<out2>
+					<v/>
+				</out2>
+			</c0>
+			<c1 id="4" n="Port">
+				<pos x="-4" y="1.5"/>
+				<out1/>
+				<v text="0"/>
+			</c1>
+			<c2 id="5" n="Title" v="telemetory">
+				<pos x="-4" y="1"/>
+			</c2>
+			<c3 id="6" n="Bool Label 1" v="Bool 1">
+				<pos x="-2.75" y="1.5"/>
+			</c3>
+			<c4 id="7" n="Bool Label 2" v="Bool 2">
+				<pos x="-2.75" y="1.25"/>
+			</c4>
+			<c5 id="8" n="Bool Label 3" v="Bool 3">
+				<pos x="-2.75" y="1"/>
+			</c5>
+			<c6 id="9" n="Bool Label 4" v="Bool 4">
+				<pos x="-2.75" y="0.75"/>
+			</c6>
+			<c7 id="10" n="Bool Label 5" v="Bool 5">
+				<pos x="-2.75" y="0.5"/>
+			</c7>
+			<c8 id="11" n="Bool Label 6" v="Bool 6">
+				<pos x="-2.75" y="0.25"/>
+			</c8>
+			<c9 id="12" n="Bool Label 7" v="Bool 7">
+				<pos x="-2.75"/>
+			</c9>
+			<c10 id="13" n="Bool Label 8" v="Bool 8">
+				<pos x="-2.75" y="-0.25"/>
+			</c10>
+			<c11 id="14" n="Bool Label 9" v="Bool 9">
+				<pos x="-2.75" y="-0.5"/>
+			</c11>
+			<c12 id="15" n="Bool Label 10" v="Bool 10">
+				<pos x="-2.75" y="-0.75"/>
+			</c12>
+			<c13 id="16" n="Bool Label 11" v="Bool 11">
+				<pos x="-2.75" y="-1"/>
+			</c13>
+			<c14 id="17" n="Bool Label 12" v="Bool 12">
+				<pos x="-2.75" y="-1.25"/>
+			</c14>
+			<c15 id="18" n="Bool Label 13" v="Bool 13">
+				<pos x="-2.75" y="-1.5"/>
+			</c15>
+			<c16 id="19" n="Bool Label 14" v="Bool 14">
+				<pos x="-2.75" y="-1.75"/>
+			</c16>
+			<c17 id="20" n="Bool Label 15" v="Bool 15">
+				<pos x="-2.75" y="-2"/>
+			</c17>
+			<c18 id="21" n="Bool Label 16" v="Bool 16">
+				<pos x="-2.75" y="-2.25"/>
+			</c18>
+			<c19 id="22" n="Bool Label 17" v="Bool 17">
+				<pos x="-1.75" y="1.5"/>
+			</c19>
+			<c20 id="23" n="Bool Label 18" v="Bool 18">
+				<pos x="-1.75" y="1.25"/>
+			</c20>
+			<c21 id="24" n="Bool Label 19" v="Bool 19">
+				<pos x="-1.75" y="1"/>
+			</c21>
+			<c22 id="25" n="Bool Label 20" v="Bool 20">
+				<pos x="-1.75" y="0.75"/>
+			</c22>
+			<c23 id="27" n="Bool Label 21" v="Bool 21">
+				<pos x="-1.75" y="0.5"/>
+			</c23>
+			<c24 id="28" n="Bool Label 22" v="Bool 22">
+				<pos x="-1.75" y="0.25"/>
+			</c24>
+			<c25 id="29" n="Bool Label 23" v="Bool 23">
+				<pos x="-1.75"/>
+			</c25>
+			<c26 id="30" n="Bool Label 24" v="Bool 24">
+				<pos x="-1.75" y="-0.25"/>
+			</c26>
+			<c27 id="31" n="Bool Label 25" v="Bool 25">
+				<pos x="-1.75" y="-0.5"/>
+			</c27>
+			<c28 id="32" n="Bool Label 26" v="Bool 26">
+				<pos x="-1.75" y="-0.75"/>
+			</c28>
+			<c29 id="33" n="Bool Label 27" v="Bool 27">
+				<pos x="-1.75" y="-1"/>
+			</c29>
+			<c30 id="34" n="Bool Label 28" v="Bool 28">
+				<pos x="-1.75" y="-1.25"/>
+			</c30>
+			<c31 id="35" n="Bool Label 29" v="Bool 29">
+				<pos x="-1.75" y="-1.5"/>
+			</c31>
+			<c32 id="36" n="Bool Label 30" v="Bool 30">
+				<pos x="-1.75" y="-1.75"/>
+			</c32>
+			<c33 id="37" n="Bool Label 31" v="Bool 31">
+				<pos x="-1.75" y="-2"/>
+			</c33>
+			<c34 id="38" n="Bool Label 32" v="Bool 32">
+				<pos x="-1.75" y="-2.25"/>
+			</c34>
+			<c35 id="40" n="Number Label 1" v="Number 1">
+				<pos x="-0.5" y="1.5"/>
+			</c35>
+			<c36 id="41" n="Number Label 2" v="Number 2">
+				<pos x="-0.5" y="1.25"/>
+			</c36>
+			<c37 id="42" n="Number Label 3" v="Number 3">
+				<pos x="-0.5" y="1"/>
+			</c37>
+			<c38 id="43" n="Number Label 4" v="Number 4">
+				<pos x="-0.5" y="0.75"/>
+			</c38>
+			<c39 id="44" n="Number Label 5" v="Number 5">
+				<pos x="-0.5" y="0.5"/>
+			</c39>
+			<c40 id="45" n="Number Label 6" v="Number 6">
+				<pos x="-0.5" y="0.25"/>
+			</c40>
+			<c41 id="46" n="Number Label 7" v="Number 7">
+				<pos x="-0.5"/>
+			</c41>
+			<c42 id="47" n="Number Label 8" v="Number 8">
+				<pos x="-0.5" y="-0.25"/>
+			</c42>
+			<c43 id="48" n="Number Label 9" v="Number 9">
+				<pos x="-0.5" y="-0.5"/>
+			</c43>
+			<c44 id="49" n="Number Label 10" v="Number 10">
+				<pos x="-0.5" y="-0.75"/>
+			</c44>
+			<c45 id="50" n="Number Label 11" v="Number 11">
+				<pos x="-0.5" y="-1"/>
+			</c45>
+			<c46 id="51" n="Number Label 12" v="Number 12">
+				<pos x="-0.5" y="-1.25"/>
+			</c46>
+			<c47 id="52" n="Number Label 13" v="Number 13">
+				<pos x="-0.5" y="-1.5"/>
+			</c47>
+			<c48 id="53" n="Number Label 14" v="Number 14">
+				<pos x="-0.5" y="-1.75"/>
+			</c48>
+			<c49 id="54" n="Number Label 15" v="Number 15">
+				<pos x="-0.5" y="-2"/>
+			</c49>
+			<c50 id="55" n="Number Label 16" v="Number 16">
+				<pos x="-0.5" y="-2.25"/>
+			</c50>
+			<c51 id="56" n="Number Label 17" v="Number 17">
+				<pos x="0.5" y="1.5"/>
+			</c51>
+			<c52 id="57" n="Number Label 18" v="Number 18">
+				<pos x="0.5" y="1.25"/>
+			</c52>
+			<c53 id="59" n="Number Label 19" v="Number 19">
+				<pos x="0.5" y="1"/>
+			</c53>
+			<c54 id="60" n="Number Label 20" v="Number 20">
+				<pos x="0.5" y="0.75"/>
+			</c54>
+			<c55 id="61" n="Number Label 21" v="Number 21">
+				<pos x="0.5" y="0.5"/>
+			</c55>
+			<c56 id="62" n="Number Label 22" v="Number 22">
+				<pos x="0.5" y="0.25"/>
+			</c56>
+			<c57 id="63" n="Number Label 23" v="Number 23">
+				<pos x="0.5"/>
+			</c57>
+			<c58 id="64" n="Number Label 24" v="Number 24">
+				<pos x="0.5" y="-0.25"/>
+			</c58>
+			<c59 id="65" n="Number Label 25" v="Number 25">
+				<pos x="0.5" y="-0.5"/>
+			</c59>
+			<c60 id="66" n="Number Label 26" v="Number 26">
+				<pos x="0.5" y="-0.75"/>
+			</c60>
+			<c61 id="67" n="Number Label 27" v="Number 27">
+				<pos x="0.5" y="-1"/>
+			</c61>
+			<c62 id="68" n="Number Label 28" v="Number 28">
+				<pos x="0.5" y="-1.25"/>
+			</c62>
+			<c63 id="69" n="Number Label 29" v="Number 29">
+				<pos x="0.5" y="-1.5"/>
+			</c63>
+			<c64 id="70" n="Number Label 30" v="Number 30">
+				<pos x="0.5" y="-1.75"/>
+			</c64>
+			<c65 id="71" n="Number Label 31" v="Number 31">
+				<pos x="0.5" y="-2"/>
+			</c65>
+			<c66 id="72" n="Number Label 32" v="Number 32">
+				<pos x="0.5" y="-2.25"/>
+			</c66>
+		</component_states>
+		<component_bridge_states>
+			<c0 id="2">
+				<pos x="1.75" y="1.5"/>
+				<in1>
+					<v/>
+				</in1>
+				<out1>
+					<v/>
+				</out1>
+			</c0>
+		</component_bridge_states>
+		<group_states/>
+	</group>
+</microprocessor>
+
