@@ -1,15 +1,3 @@
-function init()
-    logInit()
-end
-
-function onTick()
-    logOnTick()
-end
-
-function httpReply(port, req, resp)
-    clientHttpReply(port, req, resp)
-end
-
 function logInit()
     sendInit()
 
@@ -311,4 +299,7 @@ function escapeQuery(s)
     return table.concat(out)
 end
 
+init = logInit
+onTick = logOnTick
+httpReply = clientHttpReply
 init()
