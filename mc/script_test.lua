@@ -27,6 +27,290 @@ function test()
     io.write(s .. "\n")
 end
 
+function g_test_tbl.testLogActiveNil(t)
+    t:reset()
+    t.env.c_log_active_ch = nil
+    t.env.c_log_bool_ch_start = 1
+    t.env.c_log_bool_ch_limit = 0
+    t.env.c_log_number_ch_start = 1
+    t.env.c_log_number_ch_limit = 0
+    t.env.input._bool[32] = false
+    t.env.property._number["Port"] = 52149
+    t.env.property._text["Title"] = "title"
+    t.fn()
+
+    t.env.logOnTick()
+    t.env.async:assertCall(1, 52149, "/time")
+end
+
+function g_test_tbl.testLogActiveFalse(t)
+    t:reset()
+    t.env.c_log_active_ch = 32
+    t.env.c_log_bool_ch_start = 1
+    t.env.c_log_bool_ch_limit = 0
+    t.env.c_log_number_ch_start = 1
+    t.env.c_log_number_ch_limit = 0
+    t.env.input._bool[32] = false
+    t.env.property._number["Port"] = 52149
+    t.env.property._text["Title"] = "title"
+    t.fn()
+
+    t.env.logOnTick()
+    t.env.async:assertCallCount(0)
+end
+
+function g_test_tbl.testLogActiveTrue(t)
+    t:reset()
+    t.env.c_log_active_ch = 32
+    t.env.c_log_bool_ch_start = 1
+    t.env.c_log_bool_ch_limit = 0
+    t.env.c_log_number_ch_start = 1
+    t.env.c_log_number_ch_limit = 0
+    t.env.input._bool[32] = true
+    t.env.property._number["Port"] = 52149
+    t.env.property._text["Title"] = "title"
+    t.fn()
+
+    t.env.logOnTick()
+    t.env.async:assertCall(1, 52149, "/time")
+end
+
+function g_test_tbl.testLogCancel(t)
+    t:reset()
+    t.env.c_log_active_ch = 32
+    t.env.c_log_bool_ch_start = 1
+    t.env.c_log_bool_ch_limit = 0
+    t.env.c_log_number_ch_start = 1
+    t.env.c_log_number_ch_limit = 0
+    t.env.input._bool[32] = true
+    t.env.property._number["Port"] = 52149
+    t.env.property._text["Title"] = "title"
+    t.fn()
+
+    t.env.logOnTick()
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.input._bool[32] = false
+    t.env.logOnTick()
+
+    -- confirm send cancel
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCallCount(1)
+end
+
+function g_test_tbl.testLogHeader(t)
+    local tests = {
+        {
+            1, 0, 1, 0,
+            {},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%0D%0A0%0D%0A"
+        },
+        {
+            1, 1, 1, 0,
+            {["Bool Label 1"] = "BL1"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CBL1%0D%0A0%2CFALSE%0D%0A"
+        },
+        {
+            2, 2, 1, 0,
+            {["Bool Label 2"] = "BL2"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CBL2%0D%0A0%2CFALSE%0D%0A"
+        },
+        {
+            1, 3, 1, 0,
+            {["Bool Label 1"] = "BL1", ["Bool Label 2"] = "BL2", ["Bool Label 3"] = "BL3"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CBL1%2CBL2%2CBL3%0D%0A0%2CFALSE%2CFALSE%2CFALSE%0D%0A"
+        },
+        {
+            1, 0, 1, 1,
+            {["Number Label 1"] = "NL1"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CNL1%0D%0A0%2C0%0D%0A"
+        },
+        {
+            1, 0, 2, 2,
+            {["Number Label 2"] = "NL2"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CNL2%0D%0A0%2C0%0D%0A"
+        },
+        {
+            1, 0, 1, 3,
+            {["Number Label 1"] = "NL1", ["Number Label 2"] = "NL2", ["Number Label 3"] = "NL3"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CNL1%2CNL2%2CNL3%0D%0A0%2C0%2C0%2C0%0D%0A"
+        },
+        {
+            1, 1, 1, 1,
+            {["Bool Label 1"] = "BL1", ["Number Label 1"] = "NL1"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CBL1%2CNL1%0D%0A0%2CFALSE%2C0%0D%0A"
+        },
+        {
+            3, 4, 1, 2,
+            {["Bool Label 3"] = "BL3", ["Bool Label 4"] = "BL4", ["Number Label 1"] = "NL1", ["Number Label 2"] = "NL2"},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=%23%2CBL3%2CBL4%2CNL1%2CNL2%0D%0A0%2CFALSE%2CFALSE%2C0%2C0%0D%0A"
+        },
+    }
+
+    for i, tt in ipairs(tests) do
+        local in_c_log_bool_ch_start, in_c_log_bool_ch_limit, in_c_log_number_start, in_c_log_number_limit, in_property_text, want_write_url = table.unpack(tt)
+        t:reset()
+        t.env.c_log_active_ch = nil
+        t.env.c_log_bool_ch_start = in_c_log_bool_ch_start
+        t.env.c_log_bool_ch_limit = in_c_log_bool_ch_limit
+        t.env.c_log_number_ch_start = in_c_log_number_start
+        t.env.c_log_number_ch_limit = in_c_log_number_limit
+        t.env.property._number["Port"] = 52149
+        t.env.property._text["Title"] = "title"
+        for k, v in pairs(in_property_text) do
+            t.env.property._text[k] = v
+        end
+        t.fn()
+
+        t.env.logOnTick()
+        t.env.async:assertCall(1, 52149, "/time")
+
+        t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+        t.env.async:assertCall(2, 52149, want_write_url)
+    end
+end
+
+function g_test_tbl.testLogTick(t)
+    t:reset()
+    t.env.c_log_active_ch = 32
+    t.env.c_log_bool_ch_start = 1
+    t.env.c_log_bool_ch_limit = 0
+    t.env.c_log_number_ch_start = 1
+    t.env.c_log_number_ch_limit = 0
+    t.env.input._bool[32] = true
+    t.env.property._number["Port"] = 52149
+    t.env.property._text["Title"] = "title"
+    t.fn()
+
+    t.env.logOnTick()
+    t.env.async:assertCall(1, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(2, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=%23%0D%0A0%0D%0A")
+
+    t.env.httpReply(52149, "/write?path=title%2Ftitle-20060102150405.csv&data=%23%0D%0A0%0D%0A", "SVCOK")
+    t.env.async:assertCallCount(2)
+
+    t.env.logOnTick()
+    t.env.async:assertCall(3, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=1%0D%0A")
+
+    t.env.httpReply(52149, "/write?path=title%2Ftitle-20060102150405.csv&data=1%0D%0A", "SVCOK")
+    t.env.async:assertCallCount(3)
+
+    t.env.logOnTick()
+    t.env.async:assertCall(4, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=2%0D%0A")
+
+    t.env.httpReply(52149, "/write?path=title%2Ftitle-20060102150405.csv&data=2%0D%0A", "SVCOK")
+    t.env.async:assertCallCount(4)
+
+    t.env.input._bool[32] = false
+    t.env.logOnTick()
+    t.env.async:assertCallCount(4)
+
+    t.env.input._bool[32] = true
+    t.env.logOnTick()
+    t.env.async:assertCall(5, 52149, "/time")
+
+    t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+    t.env.async:assertCall(6, 52149, "/write?path=title%2Ftitle-20060102150405.csv&data=%23%0D%0A0%0D%0A")
+end
+
+function g_test_tbl.testLogRecord(t)
+    local tests = {
+        {
+            1, 0, 1, 0,
+            {},
+            {},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%0D%0A",
+        },
+        {
+            1, 1, 1, 0,
+            {[1] = false},
+            {},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2CFALSE%0D%0A",
+        },
+        {
+            1, 1, 1, 0,
+            {[1] = true},
+            {},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2CTRUE%0D%0A",
+        },
+        {
+            2, 3, 1, 0,
+            {[2] = false, [3] = true},
+            {},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2CFALSE%2CTRUE%0D%0A",
+        },
+        {
+            1, 0, 1, 1,
+            {},
+            {[1] = 10},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2C10%0D%0A",
+        },
+        {
+            1, 0, 1, 1,
+            {},
+            {[1] = 0.1},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2C0.1%0D%0A",
+        },
+        {
+            1, 0, 1, 1,
+            {},
+            {[1] = 1000000000000000},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2C1E%2B15%0D%0A",
+        },
+        {
+            1, 0, 2, 3,
+            {},
+            {[2] = 4, [3] = 5},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2C4%2C5%0D%0A",
+        },
+        {
+            1, 1, 1, 1,
+            {[1] = true},
+            {[1] = 2},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2CTRUE%2C2%0D%0A",
+        },
+        {
+            3, 4, 1, 2,
+            {[3] = false, [4] = true},
+            {[1] = 5, [2] = 6},
+            "/write?path=title%2Ftitle-20060102150405.csv&data=1%2CFALSE%2CTRUE%2C5%2C6%0D%0A",
+        },
+    }
+
+    for i, tt in ipairs(tests) do
+        local in_c_log_bool_ch_start, in_c_log_bool_ch_limit, in_c_log_number_start, in_c_log_number_limit, in_input_bool, in_input_number, want_write_url = table.unpack(tt)
+        t:reset()
+        t.env.c_log_active_ch = nil
+        t.env.c_log_bool_ch_start = in_c_log_bool_ch_start
+        t.env.c_log_bool_ch_limit = in_c_log_bool_ch_limit
+        t.env.c_log_number_ch_start = in_c_log_number_start
+        t.env.c_log_number_ch_limit = in_c_log_number_limit
+        t.env.property._number["Port"] = 52149
+        t.env.property._text["Title"] = "title"
+        t.fn()
+
+        t.env.logOnTick()
+        t.env.async:assertCall(1, 52149, "/time")
+
+        t.env.httpReply(52149, "/time", "SVCOK20060102150405")
+        t.env.async:assertCallCount(2)
+
+        t.env.httpReply(52149, t.env.async._url, "SVCOK")
+        t.env.async:assertCallCount(2)
+
+        for k, v in pairs(in_input_bool) do
+            t.env.input._bool[k] = v
+        end
+        for k, v in pairs(in_input_number) do
+            t.env.input._number[k] = v
+        end
+        t.env.logOnTick()
+        t.env.async:assertCall(3, 52149, want_write_url)
+    end
+end
+
 function g_test_tbl.testSendRequestStateInit(t)
     t:reset()
     t.fn()
@@ -948,6 +1232,8 @@ function buildT()
             self.env.tostring = tostring
             self.env.type = type
             self.env.async = buildMockAsync()
+            self.env.input = buildMockInput()
+            self.env.property = buildMockProperty()
         end
     }
     t:reset()
@@ -982,6 +1268,45 @@ function buildMockAsync()
     end
 
     return async
+end
+
+function buildMockInput()
+    local input = {
+        _bool = {},
+        _number = {},
+    }
+
+    input.getNumber = function(index)
+        return input._number[index] or 0
+    end
+
+    input.getBool = function(index)
+        return input._bool[index] or false
+    end
+
+    return input
+end
+
+function buildMockProperty()
+    local property = {
+        _number = {},
+        _bool = {},
+        _text = {},
+    }
+
+    property.getNumber = function(label)
+        return property._number[label] or 0
+    end
+
+    property.getBool = function(label)
+        return property._bool[label] or false
+    end
+
+    property.getText = function(label)
+        return property._text[label] or ""
+    end
+
+    return property
 end
 
 function buildMockClientCallback(name)

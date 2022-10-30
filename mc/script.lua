@@ -1,13 +1,79 @@
 function init()
-    sendInit()
+    logInit()
 end
 
 function onTick()
-    sendOnTick()
+    logOnTick()
 end
 
 function httpReply(port, req, resp)
     clientHttpReply(port, req, resp)
+end
+
+function logInit()
+    sendInit()
+
+    c_log_active_ch = c_log_active_ch or nil
+    c_log_bool_ch_start = c_log_bool_ch_start or 1
+    c_log_bool_ch_limit = c_log_bool_ch_limit or 0
+    c_log_number_ch_start = c_log_number_ch_start or 1
+    c_log_number_ch_limit = c_log_number_ch_limit or 0
+
+    g_log_port = math.floor(property.getNumber("Port"))
+    g_log_title = property.getText("Title")
+    g_log_header = logHeader()
+    g_log_tick = 0
+end
+
+function logOnTick()
+    sendOnTick()
+
+    if not logActive() then
+        g_log_tick = 0
+        sendCancel()
+        return
+    end
+
+    if g_log_tick == 0 then
+        sendRequest(g_log_port, g_log_title, g_log_header)
+    end
+    sendRequest(g_log_port, g_log_title, logRecord())
+    g_log_tick = g_log_tick + 1
+end
+
+function logHeader()
+    local header = {"#"}
+    for i = c_log_bool_ch_start, c_log_bool_ch_limit do
+        local label = property.getText(string.format("Bool Label %d", i))
+        table.insert(header, label)
+    end
+    for i = c_log_number_ch_start, c_log_number_ch_limit do
+        local label = property.getText(string.format("Number Label %d", i))
+        table.insert(header, label)
+    end
+    return encodeCSVRecord(header)
+end
+
+function logActive()
+    if c_log_active_ch == nil then
+        return true
+    end
+    return input.getBool(c_log_active_ch)
+end
+
+function logRecord()
+    local record = {string.format("%d", g_log_tick)}
+    for i = c_log_bool_ch_start, c_log_bool_ch_limit do
+        local field = input.getBool(i)
+        field = field and "TRUE" or "FALSE"
+        table.insert(record, field)
+    end
+    for i = c_log_number_ch_start, c_log_number_ch_limit do
+        local field = input.getNumber(i)
+        field = string.format("%G", field)
+        table.insert(record, field)
+    end
+    return encodeCSVRecord(record)
 end
 
 function sendInit()
