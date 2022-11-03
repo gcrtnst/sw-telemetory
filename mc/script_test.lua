@@ -1233,6 +1233,7 @@ function buildT()
             self.env.type = type
             self.env.async = buildMockAsync()
             self.env.input = buildMockInput()
+            self.env.output = buildMockOutput()
             self.env.property = buildMockProperty()
         end
     }
@@ -1285,6 +1286,18 @@ function buildMockInput()
     end
 
     return input
+end
+
+function buildMockOutput()
+    local output = {}
+
+    output.setBool = function(index, value)
+    end
+
+    output.setNumber = function(index, value)
+    end
+
+    return output
 end
 
 function buildMockProperty()

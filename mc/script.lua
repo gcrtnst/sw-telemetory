@@ -16,17 +16,17 @@ end
 function logOnTick()
     sendOnTick()
 
-    if not logActive() then
+    if logActive() then
+        if g_log_tick == 0 then
+            sendRequest(g_log_port, g_log_title, g_log_header)
+        end
+        sendRequest(g_log_port, g_log_title, logRecord())
+        g_log_tick = g_log_tick + 1
+    else
         g_log_tick = 0
         sendCancel()
-        return
     end
-
-    if g_log_tick == 0 then
-        sendRequest(g_log_port, g_log_title, g_log_header)
-    end
-    sendRequest(g_log_port, g_log_title, logRecord())
-    g_log_tick = g_log_tick + 1
+    logDebug()
 end
 
 function logHeader()
@@ -64,6 +64,13 @@ function logRecord()
     return encodeCSVRecord(record)
 end
 
+function logDebug()
+    output.setNumber(1, g_log_port)
+    output.setNumber(2, #g_log_title)
+    output.setNumber(3, #g_log_header)
+    output.setNumber(4, g_log_tick)
+end
+
 function sendInit()
     clientInit()
 
@@ -87,6 +94,7 @@ function sendOnTick()
     if g_send_active then
         sendEvent()
     end
+    sendDebug()
 end
 
 function sendRequest(port, title, data)
@@ -163,6 +171,15 @@ function sendError()
     g_send_error = true
 end
 
+function sendDebug()
+    output.setBool(9, g_send_error)
+    output.setBool(10, g_send_active)
+    output.setNumber(9, g_send_port or 0)
+    output.setNumber(10, #(g_send_title or ""))
+    output.setNumber(11, #(g_send_buf or ""))
+    output.setNumber(12, #(g_send_path or ""))
+end
+
 function clientInit()
     c_client_maxlen = 3840
     c_client_timeout = 600
@@ -190,9 +207,9 @@ function clientOnTick()
         g_client_timeout = g_client_timeout - 1
         if g_client_timeout <= 0 then
             clientHttpFinish(c_client_status_timeout, nil)
-            return
         end
     end
+    clientDebug()
 end
 
 function clientHttpReply(port, req, resp)
@@ -238,6 +255,14 @@ function clientHttpFinish(status, resp)
     clientInitVar()
 
     callback(ctx, status, resp)
+end
+
+function clientDebug()
+    output.setBool(17, g_client_ctx ~= nil)
+    output.setBool(18, g_client_callback ~= nil)
+    output.setNumber(17, g_client_timeout or 0)
+    output.setNumber(18, g_client_port or 0)
+    output.setNumber(19, #(g_client_req or ""))
 end
 
 function encodeCSVRecord(record)
