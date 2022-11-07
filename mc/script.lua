@@ -58,7 +58,7 @@ function logRecord()
     end
     for i = c_log_number_ch_start, c_log_number_ch_limit do
         local field = input.getNumber(i)
-        field = string.format("%G", field)
+        field = string.format("%.9G", field)
         table.insert(record, field)
     end
     return encodeCSVRecord(record)
